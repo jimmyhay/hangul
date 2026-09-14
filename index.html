@@ -1143,10 +1143,9 @@
       illustrationWrapEl.innerHTML = '';
       const img = document.createElement('img');
       img.className = 'illustration-photo';
-      img.src = photoUrl;
+      img.src = encodeURI(photoUrl);
       img.alt = parsed.translation || '';
       img.loading = 'lazy';
-      img.referrerPolicy = 'no-referrer';
       img.addEventListener('error', () => showIllustrationSvg(parsed.illustrationSvg));
       illustrationWrapEl.appendChild(img);
     } else {
@@ -1623,10 +1622,9 @@
         if (card.imageUrl && /^https?:\/\//i.test(card.imageUrl)) {
           const img = document.createElement('img');
           img.className = 'flashcard-photo';
-          img.src = card.imageUrl;
+          img.src = encodeURI(card.imageUrl);
           img.alt = '';
           img.loading = 'lazy';
-          img.referrerPolicy = 'no-referrer';
           img.addEventListener('error', () => { img.style.display = 'none'; });
           return img;
         }
