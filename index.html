@@ -261,6 +261,14 @@
     height: auto;
     display: block;
   }
+  .illustration-photo {
+    width: 64px;
+    height: 64px;
+    object-fit: cover;
+    border-radius: 10px;
+    display: block;
+    background: var(--stone-light);
+  }
 
   .section { margin-top: 26px; padding-top: 20px; position: relative; }
   .section::before {
@@ -429,6 +437,7 @@
   .flashcard-text { overflow-wrap: anywhere; }
   .flashcard-icon { flex-shrink: 0; }
   .flashcard-icon svg { width: 80px; height: 80px; display: block; }
+  .flashcard-photo { width: 80px; height: 80px; object-fit: cover; border-radius: 10px; display: block; }
   .flashcard-front {
     background: var(--card);
     border: 1.5px solid var(--ink);
@@ -1117,7 +1126,7 @@
     illustrationWrapEl.innerHTML = '';
   }
 
-  function showIllustration(svgMarkup) {
+  function showIllustrationSvg(svgMarkup) {
     const trimmed = (svgMarkup || '').trim();
     if (!trimmed.startsWith('<svg')) {
       hideIllustration();
@@ -1125,6 +1134,24 @@
     }
     illustrationWrapEl.style.display = 'block';
     illustrationWrapEl.innerHTML = '<div class="illustration-box">' + trimmed + '</div>';
+  }
+
+  function showIllustration(parsed) {
+    const photoUrl = (parsed.imageUrl || '').trim();
+    if (photoUrl && /^https?:\/\//i.test(photoUrl)) {
+      illustrationWrapEl.style.display = 'block';
+      illustrationWrapEl.innerHTML = '';
+      const img = document.createElement('img');
+      img.className = 'illustration-photo';
+      img.src = photoUrl;
+      img.alt = parsed.translation || '';
+      img.loading = 'lazy';
+      img.referrerPolicy = 'no-referrer';
+      img.addEventListener('error', () => showIllustrationSvg(parsed.illustrationSvg));
+      illustrationWrapEl.appendChild(img);
+    } else {
+      showIllustrationSvg(parsed.illustrationSvg);
+    }
   }
 
   async function translate(text) {
@@ -1150,9 +1177,9 @@
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          model: 'claude-sonnet-4-6',
-          max_tokens: 1500,
-          system: 'You are a bilingual Korean-' + otherLangName + ' dictionary and translation tutor. Given a word, phrase, or sentence, first detect whether it is written in Korean or ' + otherLangName + ', then translate it into the other of those two languages the way a knowledgeable, thorough tutor would when asked to translate something in detail. Respond with ONLY a JSON object, no markdown fences, no preamble, in this exact shape: {"detected":"ko" or "' + otherLang + '" (the language of the INPUT text, must be one of these two codes),"romanization":"Revised Romanization of whichever side is Korean - the input itself if it is Korean, or your Korean translation if the input was ' + otherLangName + '","partOfSpeech":"e.g. noun, verb, adjective, expression, idiom","translation":"the main natural translation, in the language that is NOT the input language","illustrationSvg":"a single simple SVG illustration of the core concept behind this word or phrase, as one complete self-contained string starting with <svg and ending with </svg>. Use viewBox=\"0 0 200 200\". Keep it minimal and iconographic - a flat, simple glyph-style icon with at most 3-4 shapes or paths, not a detailed scene. Only use these two colors for fill or stroke: #1B2438 and #A6321C. No gradients, no other colors, no <text> elements, no external image references, no <script> tags. Pick the closest concrete, drawable concept even for abstract words (e.g. for gratitude, draw a simple gift box or a heart). Always provide a valid complete SVG, never leave this field empty.","nuance":"1-3 sentences on register (formal/informal/honorific), connotation, and when a native speaker would actually use this versus alternatives","examples":[{"ko":"a natural Korean sentence using the word or phrase","other":"its natural ' + otherLangName + ' translation"},{"ko":"...","other":"..."},{"ko":"...","other":"..."}],"related":[{"word":"a related word or expression in the SAME language as the input","gloss":"a short gloss in the other language"}]}. Give 2-3 examples that show natural everyday use. Give 2-4 related items (synonyms, antonyms, or commonly confused words). If the input is a full sentence rather than a word/phrase, still fill every field as best fits (e.g. partOfSpeech can be "sentence"). Only ever detect Korean or ' + otherLangName + ' - if the input looks like a third language, do your best guess between those two.',
+          max_tokens: 1800,
+          tools: [{ type: 'web_search_20250305', name: 'web_search' }],
+          system: 'You are a bilingual Korean-' + otherLangName + ' dictionary and translation tutor. Given a word, phrase, or sentence, first detect whether it is written in Korean or ' + otherLangName + ', then translate it into the other of those two languages the way a knowledgeable, thorough tutor would when asked to translate something in detail. Use the web_search tool once to try to find one real, freely-viewable photo that illustrates the core concept - prefer a direct image file URL (ending in .jpg, .jpeg, .png, or .webp) from Wikimedia Commons (upload.wikimedia.org) or another stable public source; skip this and leave imageUrl empty if nothing suitable turns up rather than guessing a URL. After that, respond with ONLY a JSON object as your final answer, no markdown fences, no preamble, in this exact shape: {"detected":"ko" or "' + otherLang + '" (the language of the INPUT text, must be one of these two codes),"romanization":"Revised Romanization of whichever side is Korean - the input itself if it is Korean, or your Korean translation if the input was ' + otherLangName + '","partOfSpeech":"e.g. noun, verb, adjective, expression, idiom","translation":"the main natural translation, in the language that is NOT the input language","imageUrl":"a direct link to a real photo file from your search that illustrates the core concept, or empty string if none found","illustrationSvg":"a single simple SVG illustration of the core concept behind this word or phrase, as one complete self-contained string starting with <svg and ending with </svg>. Use viewBox=\"0 0 200 200\". Keep it minimal and iconographic - a flat, simple glyph-style icon with at most 3-4 shapes or paths, not a detailed scene. Only use these two colors for fill or stroke: #1B2438 and #A6321C. No gradients, no other colors, no <text> elements, no external image references, no <script> tags. Pick the closest concrete, drawable concept even for abstract words (e.g. for gratitude, draw a simple gift box or a heart). Always provide a valid complete SVG, never leave this field empty - this is used as a fallback if imageUrl is empty.","nuance":"1-3 sentences on register (formal/informal/honorific), connotation, and when a native speaker would actually use this versus alternatives","examples":[{"ko":"a natural Korean sentence using the word or phrase","other":"its natural ' + otherLangName + ' translation"},{"ko":"...","other":"..."},{"ko":"...","other":"..."}],"related":[{"word":"a related word or expression in the SAME language as the input","gloss":"a short gloss in the other language"}]}. Give 2-3 examples that show natural everyday use. Give 2-4 related items (synonyms, antonyms, or commonly confused words). If the input is a full sentence rather than a word/phrase, still fill every field as best fits (e.g. partOfSpeech can be "sentence"). Only ever detect Korean or ' + otherLangName + ' - if the input looks like a third language, do your best guess between those two.',
           messages: [{ role: 'user', content: text }]
         })
       });
@@ -1185,7 +1212,7 @@
 
     resultEl.classList.remove('loading', 'empty');
     resultEl.textContent = parsed.translation;
-    showIllustration(parsed.illustrationSvg);
+    showIllustration(parsed);
     statusEl.textContent = '';
     copyBtn.style.display = 'inline-block';
     copyBtn.dataset.text = parsed.translation;
@@ -1486,6 +1513,7 @@
       translation: entry.result.translation,
       romanization: entry.result.romanization || '',
       illustrationSvg: entry.result.illustrationSvg || '',
+      imageUrl: entry.result.imageUrl || '',
       examples: Array.isArray(entry.result.examples) ? entry.result.examples : [],
       set: setName || null,
       ts: Date.now()
@@ -1591,18 +1619,34 @@
       inner.className = 'flashcard-inner';
       inner.addEventListener('click', () => outer.classList.toggle('flipped'));
 
+      function buildCardIllustration() {
+        if (card.imageUrl && /^https?:\/\//i.test(card.imageUrl)) {
+          const img = document.createElement('img');
+          img.className = 'flashcard-photo';
+          img.src = card.imageUrl;
+          img.alt = '';
+          img.loading = 'lazy';
+          img.referrerPolicy = 'no-referrer';
+          img.addEventListener('error', () => { img.style.display = 'none'; });
+          return img;
+        }
+        if (card.illustrationSvg && card.illustrationSvg.trim().startsWith('<svg')) {
+          const icon = document.createElement('div');
+          icon.className = 'flashcard-icon';
+          icon.innerHTML = card.illustrationSvg;
+          return icon;
+        }
+        return null;
+      }
+
       const front = document.createElement('div');
       front.className = 'flashcard-face flashcard-front';
       const frontText = document.createElement('div');
       frontText.className = 'flashcard-text';
       frontText.textContent = card.source;
       front.appendChild(frontText);
-      if (card.illustrationSvg && card.illustrationSvg.trim().startsWith('<svg')) {
-        const frontIcon = document.createElement('div');
-        frontIcon.className = 'flashcard-icon';
-        frontIcon.innerHTML = card.illustrationSvg;
-        front.appendChild(frontIcon);
-      }
+      const frontIllus = buildCardIllustration();
+      if (frontIllus) front.appendChild(frontIllus);
 
       const back = document.createElement('div');
       back.className = 'flashcard-face flashcard-back';
@@ -1610,12 +1654,8 @@
       backText.className = 'flashcard-text';
       backText.textContent = card.translation;
       back.appendChild(backText);
-      if (card.illustrationSvg && card.illustrationSvg.trim().startsWith('<svg')) {
-        const backIcon = document.createElement('div');
-        backIcon.className = 'flashcard-icon';
-        backIcon.innerHTML = card.illustrationSvg;
-        back.appendChild(backIcon);
-      }
+      const backIllus = buildCardIllustration();
+      if (backIllus) back.appendChild(backIllus);
 
       const tag = document.createElement('button');
       tag.className = 'flashcard-tag' + (card.set ? '' : ' unset');
