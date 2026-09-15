@@ -6,8 +6,16 @@
 // This function translates that into Gemini's actual request format, and
 // shapes Gemini's response to look like Claude's ({ content: [{ type: 'text', text }] })
 // so none of the frontend's response-parsing code needed to change either.
+//
+// Free-tier Gemini has a fairly low requests-per-minute limit, so this
+// retries automatically (with backoff) on 429s before giving up.
 
 const MODEL = 'gemini-3.5-flash-lite';
+const MAX_RETRIES = 2;
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -36,19 +44,36 @@ export default async function handler(req, res) {
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`;
 
   try {
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-goog-api-key': process.env.GEMINI_API_KEY
-      },
-      body: JSON.stringify(geminiBody)
-    });
+    let response;
+    let data;
 
-    const data = await response.json();
+    for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+      response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-goog-api-key': process.env.GEMINI_API_KEY
+        },
+        body: JSON.stringify(geminiBody)
+      });
+
+      if (response.status !== 429) break;
+
+      if (attempt < MAX_RETRIES) {
+        // Backoff: ~1.5s, then ~3s before giving up.
+        await sleep(1500 * (attempt + 1));
+      }
+    }
+
+    data = await response.json();
 
     if (!response.ok) {
       console.error('Gemini error:', JSON.stringify(data));
+      if (response.status === 429) {
+        return res.status(429).json({
+          error: 'Rate limit reached on the free tier. Wait a moment and try again, or check your usage at aistudio.google.com/rate-limit.'
+        });
+      }
       return res.status(response.status).json({ error: data.error || data });
     }
 
