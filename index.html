@@ -324,6 +324,35 @@
   }
   .example .en { font-size: 13.5px; color: var(--stone); }
 
+  .tappable-word {
+    cursor: pointer;
+    border-bottom: 1.5px dashed var(--stone-light);
+    transition: color 0.1s ease, border-color 0.1s ease;
+  }
+  .tappable-word:hover { color: var(--seal); border-bottom-color: var(--seal-soft); }
+
+  .word-gloss-popup {
+    position: absolute;
+    z-index: 200;
+    max-width: 220px;
+    background: var(--ink-deep);
+    color: var(--card);
+    padding: 9px 12px;
+    border-radius: 10px;
+    box-shadow: 0 6px 16px rgba(16,24,42,0.3);
+  }
+  .word-gloss-term {
+    font-family: "Noto Sans KR", "Noto Sans JP", sans-serif;
+    font-weight: 600;
+    font-size: 14px;
+    margin-bottom: 2px;
+  }
+  .word-gloss-body {
+    font-family: "Inter", sans-serif;
+    font-size: 12.5px;
+    color: rgba(245,241,230,0.85);
+  }
+
   .related-list { display: flex; flex-wrap: wrap; gap: 8px; }
   .related-item {
     background: var(--seal-tint);
@@ -1123,6 +1152,7 @@
   });
 
   function resetResult() {
+    closeGlossPopup();
     detectedDirectionEl.style.display = 'none';
     metaEl.style.display = 'none';
     resultEl.classList.remove('loading');
@@ -1145,6 +1175,93 @@
   function hideIllustration() {
     illustrationWrapEl.style.display = 'none';
     illustrationWrapEl.innerHTML = '';
+  }
+
+  let glossPopupEl = null;
+
+  function closeGlossPopup() {
+    if (glossPopupEl) {
+      glossPopupEl.remove();
+      glossPopupEl = null;
+    }
+    document.removeEventListener('click', handleOutsideGlossClick);
+    document.removeEventListener('keydown', handleGlossEscape);
+  }
+
+  function handleOutsideGlossClick(e) {
+    if (glossPopupEl && !glossPopupEl.contains(e.target) && !e.target.classList.contains('tappable-word')) {
+      closeGlossPopup();
+    }
+  }
+
+  function handleGlossEscape(e) {
+    if (e.key === 'Escape') closeGlossPopup();
+  }
+
+  async function showWordGloss(word, sentence, anchorEl, targetLangName) {
+    closeGlossPopup();
+
+    const popup = document.createElement('div');
+    popup.className = 'word-gloss-popup';
+    popup.innerHTML =
+      '<div class="word-gloss-term">' + word.replace(/</g, '&lt;') + '</div>' +
+      '<div class="word-gloss-body">Looking up…</div>';
+    document.body.appendChild(popup);
+    glossPopupEl = popup;
+
+    const rect = anchorEl.getBoundingClientRect();
+    const popupWidth = 220;
+    const left = Math.min(Math.max(8, rect.left), window.innerWidth - popupWidth - 8);
+    popup.style.left = left + 'px';
+    popup.style.top = (rect.bottom + window.scrollY + 6) + 'px';
+
+    setTimeout(() => {
+      document.addEventListener('click', handleOutsideGlossClick);
+      document.addEventListener('keydown', handleGlossEscape);
+    }, 0);
+
+    try {
+      const response = await fetch('/api/claude', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          max_tokens: 60,
+          system: 'Give a very short gloss (2-6 words, no punctuation at the end, no explanation) of what the word or particle "' + word + '" means here, in the context of this sentence: "' + sentence + '". Respond in ' + targetLangName + ' only, with just the gloss itself - no quotes, no extra commentary.',
+          messages: [{ role: 'user', content: word }]
+        })
+      });
+      const data = await response.json();
+      if (glossPopupEl !== popup) return;
+
+      const textBlocks = (data.content || []).filter(b => b.type === 'text' && b.text);
+      const gloss = textBlocks.length ? textBlocks[textBlocks.length - 1].text.trim() : '';
+      popup.querySelector('.word-gloss-body').textContent = gloss || 'No gloss found';
+    } catch (e) {
+      if (glossPopupEl === popup) {
+        popup.querySelector('.word-gloss-body').textContent = "Couldn't look this up.";
+      }
+    }
+  }
+
+  function makeClickableText(text, sentence, targetLangName) {
+    const frag = document.createDocumentFragment();
+    const segments = (text || '').split(/(\s+)/);
+    segments.forEach((seg) => {
+      if (!seg) return;
+      if (/^\s+$/.test(seg)) {
+        frag.appendChild(document.createTextNode(seg));
+        return;
+      }
+      const span = document.createElement('span');
+      span.className = 'tappable-word';
+      span.textContent = seg;
+      span.addEventListener('click', (e) => {
+        e.stopPropagation();
+        showWordGloss(seg, sentence, span, targetLangName);
+      });
+      frag.appendChild(span);
+    });
+    return frag;
   }
 
   async function lookupImage(query) {
@@ -1381,12 +1498,14 @@
 
     if (Array.isArray(parsed.examples) && parsed.examples.length) {
       examplesListEl.innerHTML = '';
+      const glossOtherCode = entryDirection ? (entryDirection.split('-').find(p => p !== 'ko') || 'en') : 'en';
+      const glossLangName = LANG_NAMES_EN[glossOtherCode] || 'English';
       parsed.examples.forEach(ex => {
         const div = document.createElement('div');
         div.className = 'example';
         const ko = document.createElement('div');
         ko.className = 'ko';
-        ko.textContent = ex.ko;
+        ko.appendChild(makeClickableText(ex.ko, ex.ko, glossLangName));
         const other = document.createElement('div');
         other.className = 'en';
         other.textContent = ex.other;
@@ -2006,14 +2125,16 @@
     );
   }
 
-  function renderCardExample(example) {
+  function renderCardExample(example, card) {
     exampleContentEl.innerHTML = '';
     const wrap = document.createElement('div');
     wrap.className = 'example';
 
     const ko = document.createElement('div');
     ko.className = 'ko';
-    ko.textContent = example.ko;
+    const cardOtherCode = card && card.direction ? (card.direction.split('-').find(p => p !== 'ko') || 'en') : 'en';
+    const cardGlossLangName = LANG_NAMES_EN[cardOtherCode] || 'English';
+    ko.appendChild(makeClickableText(example.ko, example.ko, cardGlossLangName));
 
     const toggleBtn = document.createElement('button');
     toggleBtn.className = 'example-reveal-btn';
@@ -2044,7 +2165,7 @@
     exampleOverlay.classList.add('open');
 
     if (card.examples && card.examples.length) {
-      renderCardExample(card.examples[Math.floor(Math.random() * card.examples.length)]);
+      renderCardExample(card.examples[Math.floor(Math.random() * card.examples.length)], card);
     } else {
       exampleContentEl.innerHTML = '<div class="illustration-loading">Loading example…</div>';
       fetchCardExample(card);
@@ -2052,6 +2173,7 @@
   }
 
   function closeExampleModal() {
+    closeGlossPopup();
     exampleOverlay.classList.remove('open');
     exampleCard = null;
   }
@@ -2080,7 +2202,7 @@
       const example = JSON.parse(cleaned);
 
       if (exampleCard !== card) return;
-      renderCardExample(example);
+      renderCardExample(example, card);
 
       card.examples = Array.isArray(card.examples) ? card.examples : [];
       card.examples.push(example);
