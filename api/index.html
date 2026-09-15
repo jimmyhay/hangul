@@ -1,0 +1,2042 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>번역 — Korean to English</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #EFEAE0;
+    --card: #FBF9F4;
+    --ink: #1B2438;
+    --ink-deep: #10182A;
+    --ink-soft: #4B5568;
+    --stone: #8B8677;
+    --stone-light: #DAD3C3;
+    --seal: #A6321C;
+    --seal-soft: #C96A50;
+    --seal-tint: #F3E3DD;
+    --success: #3F6E4E;
+    --success-tint: #E3ECE4;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+    display: flex;
+    justify-content: center;
+    min-height: 100vh;
+  }
+  .app { width: 100%; max-width: 860px; padding-bottom: 40px; }
+
+  .band {
+    background: var(--ink-deep);
+    padding: 34px 24px 46px;
+    position: relative;
+    overflow: hidden;
+  }
+  .band::after {
+    content: "";
+    position: absolute;
+    right: -40px;
+    top: -40px;
+    width: 160px;
+    height: 160px;
+    border: 1px solid rgba(245,241,230,0.08);
+    border-radius: 50%;
+  }
+  .band-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    position: relative;
+    z-index: 1;
+  }
+  .brand { display: flex; align-items: center; gap: 14px; }
+  .stamp {
+    width: 46px;
+    height: 46px;
+    border-radius: 6px;
+    background: var(--seal);
+    color: var(--card);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: "Noto Sans KR", "Noto Sans JP", sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    transform: rotate(-6deg);
+    flex-shrink: 0;
+  }
+  .brand-text h1 {
+    margin: 0;
+    font-family: "Noto Sans KR", "Noto Sans JP", sans-serif;
+    font-weight: 600;
+    font-size: 22px;
+    color: var(--card);
+    letter-spacing: 0.01em;
+  }
+  .brand-text p {
+    margin: 2px 0 0;
+    font-size: 12.5px;
+    color: rgba(245,241,230,0.55);
+  }
+  .lang-btn {
+    border: 1px solid rgba(245,241,230,0.25);
+    background: rgba(245,241,230,0.06);
+    color: var(--card);
+    font-size: 13px;
+    padding: 8px 14px;
+    border-radius: 100px;
+    cursor: pointer;
+    white-space: nowrap;
+    font-family: "Inter", sans-serif;
+  }
+  .lang-btn:hover { border-color: var(--seal-soft); color: var(--seal-soft); }
+  .lang-btn:active { transform: scale(0.97); }
+
+  .card {
+    background: var(--card);
+    margin: -26px 16px 0;
+    border-radius: 18px;
+    padding: 30px 24px 24px;
+    position: relative;
+    z-index: 1;
+  }
+  .content { padding: 0 8px 40px; }
+
+  .input-wrap { position: relative; }
+  .input-row { display: flex; align-items: flex-end; gap: 12px; }
+  textarea {
+    flex: 1;
+    width: 100%;
+    border: none;
+    background: transparent;
+    font-family: "Noto Sans KR", "Noto Sans JP", sans-serif;
+    font-size: 23px;
+    font-weight: 500;
+    line-height: 1.5;
+    color: var(--ink);
+    padding: 2px 0 16px 0;
+    resize: none;
+    outline: none;
+    min-height: 60px;
+  }
+  textarea::placeholder { color: var(--stone); font-weight: 400; }
+
+  .translate-btn {
+    flex-shrink: 0;
+    border: none;
+    background: var(--seal);
+    color: var(--card);
+    font-size: 14px;
+    font-weight: 500;
+    padding: 10px 18px;
+    border-radius: 100px;
+    cursor: pointer;
+    margin-bottom: 16px;
+    font-family: "Inter", sans-serif;
+    transition: background 0.15s ease;
+  }
+  .translate-btn:hover { background: var(--seal-soft); }
+  .translate-btn:active { transform: scale(0.97); }
+  .translate-btn:disabled { background: var(--stone-light); color: var(--stone); cursor: default; }
+
+  .brush {
+    display: block;
+    width: 100%;
+    height: 7px;
+    color: var(--stone-light);
+    transition: color 0.2s ease;
+  }
+  .input-wrap.focused .brush { color: var(--seal-soft); }
+
+  .result-wrap { min-height: 80px; margin-top: 26px; opacity: 0; transform: translateY(4px); transition: opacity 0.25s ease, transform 0.25s ease; }
+  .result-wrap.visible { opacity: 1; transform: translateY(0); }
+
+  .translation-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  .translation-side {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 12px;
+    flex-shrink: 0;
+    margin-top: -24px;
+  }
+  .detected-direction {
+    font-size: 11.5px;
+    color: var(--seal);
+    background: var(--seal-tint);
+    padding: 4px 11px;
+    border-radius: 100px;
+    font-family: "Inter", sans-serif;
+    letter-spacing: 0.01em;
+    white-space: nowrap;
+  }
+
+  .meta {
+    font-size: 13px;
+    color: var(--stone);
+    margin-bottom: 8px;
+    font-family: "Inter", sans-serif;
+  }
+  .meta .pos {
+    color: var(--seal);
+    font-style: italic;
+  }
+  .result {
+    font-family: "Noto Sans KR", "Noto Sans JP", sans-serif;
+    font-weight: 700;
+    font-size: 32px;
+    line-height: 1.4;
+    color: var(--seal);
+    white-space: pre-wrap;
+    flex: 1;
+    min-width: 0;
+  }
+  .result.empty {
+    color: var(--stone);
+    font-size: 16px;
+    font-family: "Inter", sans-serif;
+    font-weight: 400;
+  }
+  .status {
+    font-size: 13px;
+    color: var(--stone);
+    font-family: "Inter", sans-serif;
+  }
+
+  .result.loading {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    font-family: "Inter", sans-serif;
+    font-weight: 600;
+    font-size: 20px;
+    color: var(--seal);
+  }
+  .loading-dots {
+    display: inline-flex;
+    gap: 7px;
+    align-items: center;
+  }
+  .loading-dots span {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--seal);
+    animation: bounce 0.9s infinite ease-in-out;
+  }
+  .loading-dots span:nth-child(2) { animation-delay: 0.15s; }
+  .loading-dots span:nth-child(3) { animation-delay: 0.3s; }
+  @keyframes bounce {
+    0%, 80%, 100% { transform: translateY(0); opacity: 0.35; }
+    40% { transform: translateY(-9px); opacity: 1; }
+  }
+
+  .illustration-wrap { display: block; }
+  .illustration-box {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--paper);
+    border: 1px solid var(--stone-light);
+    border-radius: 10px;
+    padding: 6px;
+  }
+  .illustration-box svg {
+    width: 100%;
+    max-width: 52px;
+    height: auto;
+    display: block;
+  }
+  .illustration-photo {
+    width: 64px;
+    height: 64px;
+    object-fit: cover;
+    border-radius: 10px;
+    display: block;
+    background: var(--stone-light);
+  }
+
+  .section { margin-top: 26px; padding-top: 20px; position: relative; }
+  .section::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0;
+    width: 22px;
+    height: 2px;
+    background: var(--seal);
+  }
+  .section-label {
+    font-size: 11.5px;
+    color: var(--stone);
+    margin-bottom: 12px;
+    text-transform: lowercase;
+    letter-spacing: 0.02em;
+  }
+  .nuance {
+    font-size: 15px;
+    line-height: 1.65;
+    color: var(--ink-soft);
+  }
+  .example { margin-bottom: 15px; }
+  .example:last-child { margin-bottom: 0; }
+  .example .ko {
+    font-family: "Noto Sans KR", "Noto Sans JP", sans-serif;
+    font-weight: 500;
+    font-size: 17px;
+    color: var(--ink);
+    margin-bottom: 2px;
+  }
+  .example .en { font-size: 13.5px; color: var(--stone); }
+
+  .related-list { display: flex; flex-wrap: wrap; gap: 8px; }
+  .related-item {
+    background: var(--seal-tint);
+    border-radius: 100px;
+    padding: 6px 13px 6px 13px;
+    font-size: 13.5px;
+  }
+  .related-item .word { font-family: "Noto Sans KR", "Noto Sans JP", sans-serif; font-weight: 500; color: var(--seal); }
+  .related-item .gloss { color: var(--ink-soft); font-size: 12px; margin-left: 5px; }
+
+  .row { display: flex; justify-content: space-between; align-items: center; margin-top: 20px; gap: 10px; }
+  .row-actions { display: flex; gap: 10px; margin-left: auto; }
+  .copy-btn, .save-btn {
+    border: none;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 9px 18px;
+    border-radius: 100px;
+    cursor: pointer;
+    font-family: "Inter", sans-serif;
+    transition: background 0.15s ease, color 0.15s ease, transform 0.1s ease;
+  }
+  .copy-btn {
+    background: var(--ink);
+    color: var(--card);
+  }
+  .copy-btn:hover { background: var(--ink-deep); }
+  .save-btn {
+    background: var(--seal-tint);
+    color: var(--seal);
+    border: 1px solid var(--seal-soft);
+  }
+  .save-btn:hover { background: var(--seal); color: var(--card); }
+  .save-btn.saved { background: var(--seal); color: var(--card); border-color: var(--seal); }
+  .copy-btn:active, .save-btn:active { transform: scale(0.96); }
+
+  .panel {
+    background: var(--card);
+    margin: 20px 16px 0;
+    border-radius: 18px;
+    padding: 24px;
+  }
+
+  .flashcards-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 16px; }
+  .flashcards-head-actions { display: flex; align-items: center; gap: 14px; }
+  .quiz-btn {
+    border: none;
+    background: var(--ink);
+    color: var(--card);
+    font-size: 12.5px;
+    font-weight: 500;
+    padding: 7px 14px;
+    border-radius: 100px;
+    cursor: pointer;
+    font-family: "Inter", sans-serif;
+  }
+  .quiz-btn:hover { background: var(--ink-deep); }
+  .quiz-btn:disabled { background: var(--stone-light); color: var(--stone); cursor: default; }
+  .flashcards-head .label {
+    font-family: "Noto Sans KR", "Noto Sans JP", sans-serif;
+    font-weight: 600;
+    font-size: 20px;
+    color: var(--ink);
+  }
+  .flashcards-empty { font-size: 13px; color: var(--stone); }
+
+  .set-filter {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 6px;
+    margin-bottom: 16px;
+  }
+  .set-pill {
+    flex-shrink: 0;
+    border: 1px solid var(--stone-light);
+    background: transparent;
+    color: var(--ink-soft);
+    font-size: 13px;
+    padding: 6px 14px;
+    border-radius: 100px;
+    cursor: pointer;
+    white-space: nowrap;
+    font-family: "Inter", sans-serif;
+  }
+  .set-pill .count { opacity: 0.6; margin-left: 3px; }
+  .set-pill.active { background: var(--ink); color: var(--card); border-color: var(--ink); }
+
+  .flashcards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 12px;
+  }
+  .flashcard-cell { display: flex; flex-direction: column; gap: 6px; }
+  .flashcard-practice-btn {
+    border: 1px dashed var(--stone-light);
+    background: transparent;
+    color: var(--stone);
+    font-size: 11.5px;
+    padding: 6px 8px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: "Inter", sans-serif;
+  }
+  .flashcard-practice-btn:hover { border-color: var(--seal-soft); color: var(--seal); }
+  .flashcard-btn-row { display: flex; gap: 6px; flex-wrap: wrap; }
+  .flashcard-btn-row .flashcard-practice-btn { flex: 1; }
+  .flashcard { perspective: 900px; height: 200px; -webkit-perspective: 900px; }
+  .flashcard-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transition: transform 0.5s cubic-bezier(0.4,0.2,0.2,1);
+    transform-style: preserve-3d;
+    -webkit-transform-style: preserve-3d;
+    cursor: pointer;
+  }
+  .flashcard.flipped .flashcard-inner { transform: rotateY(180deg); -webkit-transform: rotateY(180deg); }
+  .flashcard-face {
+    position: absolute;
+    inset: 0;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 10px;
+    gap: 8px;
+  }
+  .flashcard-text { overflow-wrap: anywhere; }
+  .flashcard-icon { flex-shrink: 0; }
+  .flashcard-icon svg { width: 80px; height: 80px; display: block; }
+  .flashcard-photo { width: 80px; height: 80px; object-fit: cover; border-radius: 10px; display: block; }
+  .flashcard-front {
+    background: var(--card);
+    border: 1.5px solid var(--ink);
+    font-family: "Noto Sans KR", "Noto Sans JP", sans-serif;
+    font-weight: 600;
+    font-size: 19px;
+    color: var(--ink);
+  }
+  .flashcard-back {
+    background: var(--seal-tint);
+    transform: rotateY(180deg);
+    -webkit-transform: rotateY(180deg);
+    font-family: "Noto Sans KR", "Noto Sans JP", sans-serif;
+    font-weight: 500;
+    font-size: 15px;
+    color: var(--seal);
+  }
+  .flashcard-remove {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(0,0,0,0.06);
+    color: var(--stone);
+    font-size: 13px;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+  }
+  .flashcard-remove:hover { background: var(--seal); color: var(--card); }
+  .flashcard-tag {
+    position: absolute;
+    top: 6px;
+    left: 6px;
+    font-size: 10px;
+    background: rgba(0,0,0,0.06);
+    color: var(--ink-soft);
+    padding: 3px 8px;
+    border-radius: 100px;
+    cursor: pointer;
+    z-index: 2;
+    font-family: "Inter", sans-serif;
+    max-width: 70%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .flashcard-tag:hover { background: var(--seal); color: var(--card); }
+  .flashcard-tag.unset {
+    background: transparent;
+    color: var(--stone);
+    border: 1px dashed var(--stone-light);
+  }
+
+  .history-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+  .history-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    padding: 0;
+  }
+  .history-toggle .label {
+    font-family: "Noto Sans KR", "Noto Sans JP", sans-serif;
+    font-weight: 600;
+    font-size: 20px;
+    color: var(--ink);
+  }
+  .history-toggle .chevron {
+    display: flex;
+    color: var(--stone);
+    transition: transform 0.2s ease;
+  }
+  .history.collapsed .history-toggle .chevron { transform: rotate(-90deg); }
+  .history.collapsed .history-body { display: none; }
+  .clear-btn {
+    border: none;
+    background: transparent;
+    color: var(--stone);
+    font-size: 12px;
+    cursor: pointer;
+    font-family: "Inter", sans-serif;
+  }
+  .clear-btn:hover { color: var(--seal); }
+  .history-empty { font-size: 13px; color: var(--stone); }
+  .history-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--stone-light);
+    gap: 10px;
+  }
+  .history-item:last-child { border-bottom: none; }
+  .history-item:hover .history-source { color: var(--seal); }
+  .history-main {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    flex: 1;
+    min-width: 0;
+    cursor: pointer;
+  }
+  .history-source {
+    font-family: "Noto Sans KR", "Noto Sans JP", sans-serif;
+    font-weight: 600;
+    font-size: 18px;
+    color: var(--ink);
+    flex-shrink: 0;
+  }
+  .history-translation {
+    font-size: 13px;
+    color: var(--stone);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-family: "Inter", sans-serif;
+  }
+  .history-remove {
+    flex-shrink: 0;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: none;
+    background: transparent;
+    color: var(--stone);
+    font-size: 14px;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .history-remove:hover { background: var(--seal); color: var(--card); }
+
+  @media (max-width: 420px) {
+    .band { padding: 28px 18px 40px; }
+    .card { margin: -24px 10px 0; padding: 26px 18px 20px; }
+    .panel { margin: 16px 10px 0; padding: 20px 18px; }
+    .brand-text h1 { font-size: 19px; }
+    textarea { font-size: 20px; }
+    .result { font-size: 27px; }
+  }
+
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(16,24,42,0.45);
+    align-items: center;
+    justify-content: center;
+    z-index: 50;
+    padding: 20px;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal-box {
+    background: var(--card);
+    border-radius: 16px;
+    padding: 22px;
+    width: 100%;
+    max-width: 320px;
+  }
+  .modal-title {
+    font-family: "Noto Sans KR", "Noto Sans JP", sans-serif;
+    font-weight: 600;
+    font-size: 17px;
+    color: var(--ink);
+    margin: 0 0 4px;
+  }
+  .modal-subtitle {
+    font-size: 13px;
+    color: var(--stone);
+    margin: 0 0 14px;
+  }
+  .modal-input {
+    width: 100%;
+    border: 1px solid var(--stone-light);
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-size: 15px;
+    font-family: "Inter", sans-serif;
+    color: var(--ink);
+    outline: none;
+    background: var(--paper);
+  }
+  .modal-input:focus { border-color: var(--seal-soft); }
+  .modal-suggestions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 12px;
+  }
+  .modal-suggestion {
+    border: 1px solid var(--stone-light);
+    background: transparent;
+    color: var(--ink-soft);
+    font-size: 12.5px;
+    padding: 5px 11px;
+    border-radius: 100px;
+    cursor: pointer;
+    font-family: "Inter", sans-serif;
+  }
+  .modal-suggestion:hover { border-color: var(--seal-soft); color: var(--seal); }
+  .modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+  }
+  .modal-btn {
+    border: none;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 9px 18px;
+    border-radius: 100px;
+    cursor: pointer;
+    font-family: "Inter", sans-serif;
+  }
+  .modal-btn.secondary { background: transparent; color: var(--ink-soft); }
+  .modal-btn.secondary:hover { color: var(--seal); }
+  .modal-btn.primary { background: var(--seal); color: var(--card); }
+  .modal-btn.primary:hover { background: var(--seal-soft); }
+
+  .quiz-box { max-width: 360px; }
+  .practice-box { max-width: 380px; }
+  .example-modal-content { margin: 14px 0 4px; min-height: 60px; }
+  .example-modal-content .example { margin-bottom: 0; }
+  .example-modal-content .ko { font-size: 20px; margin-bottom: 10px; }
+  .example-reveal-btn {
+    border: 1px solid var(--stone-light);
+    background: transparent;
+    color: var(--ink-soft);
+    font-size: 12.5px;
+    padding: 6px 12px;
+    border-radius: 100px;
+    cursor: pointer;
+    font-family: "Inter", sans-serif;
+  }
+  .example-reveal-btn:hover { border-color: var(--seal-soft); color: var(--seal); }
+  .example-modal-content .example-translation { margin-top: 10px; }
+  .practice-input {
+    width: 100%;
+    resize: vertical;
+    min-height: 70px;
+    margin-top: 12px;
+  }
+  .quiz-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 18px;
+  }
+  .quiz-progress, .quiz-score { font-size: 12.5px; color: var(--stone); font-family: "Inter", sans-serif; }
+  .quiz-close {
+    border: none;
+    background: transparent;
+    color: var(--stone);
+    font-size: 20px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0 0 0 10px;
+  }
+  .quiz-close:hover { color: var(--seal); }
+  .quiz-hint { font-size: 12.5px; color: var(--stone); margin: 0 0 6px; font-family: "Inter", sans-serif; }
+  .quiz-prompt {
+    font-family: "Noto Sans KR", "Noto Sans JP", sans-serif;
+    font-weight: 600;
+    font-size: 28px;
+    color: var(--ink);
+    margin: 0 0 18px;
+  }
+  .quiz-input { font-size: 16px; }
+  .quiz-feedback {
+    margin-top: 12px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-family: "Inter", sans-serif;
+  }
+  .quiz-feedback.correct { background: var(--success-tint); color: var(--success); }
+  .quiz-feedback.incorrect { background: var(--seal-tint); color: var(--seal); }
+  .quiz-feedback .answer { font-family: "Noto Sans KR", "Noto Sans JP", sans-serif; font-weight: 500; }
+  .feedback-foreign {
+    font-family: "Noto Sans KR", "Noto Sans JP", sans-serif;
+    font-weight: 700;
+    color: var(--seal);
+  }
+  .quiz-summary-score {
+    font-family: "Noto Sans KR", "Noto Sans JP", sans-serif;
+    font-weight: 600;
+    font-size: 22px;
+    color: var(--ink);
+    margin: 0 0 4px;
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="band">
+    <div class="band-top">
+      <div class="brand">
+        <div class="stamp">역</div>
+        <div class="brand-text">
+          <h1>번역</h1>
+          <p>Korean, in detail</p>
+        </div>
+      </div>
+      <button class="lang-btn" id="langBtn">Korean ⇄ English</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="content">
+      <div class="input-wrap" id="inputWrap">
+        <div class="input-row">
+          <textarea id="input" placeholder="Type in English or 한국어" rows="2" autofocus></textarea>
+          <button class="translate-btn" id="translateBtn" disabled>Translate</button>
+        </div>
+        <svg class="brush" viewBox="0 0 400 8" preserveAspectRatio="none">
+          <path d="M2,5 C60,2 140,7 200,4 C260,1 340,6 398,3" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+        </svg>
+      </div>
+
+      <div class="result-wrap" id="resultWrap">
+        <div class="meta" id="meta" style="display:none;"></div>
+        <div class="translation-row">
+          <div class="result empty" id="result">Your translation will appear here.</div>
+          <div class="translation-side" id="translationSide">
+            <div class="detected-direction" id="detectedDirection" style="display:none;"></div>
+            <div class="illustration-wrap" id="illustrationWrap" style="display:none;"></div>
+          </div>
+        </div>
+
+        <div class="section" id="nuanceSection" style="display:none;">
+          <div class="section-label">nuance</div>
+          <div class="nuance" id="nuance"></div>
+        </div>
+
+        <div class="section" id="examplesSection" style="display:none;">
+          <div class="section-label">used in a sentence</div>
+          <div id="examplesList"></div>
+        </div>
+
+        <div class="section" id="relatedSection" style="display:none;">
+          <div class="section-label">related expressions</div>
+          <div class="related-list" id="relatedList"></div>
+        </div>
+      </div>
+
+      <div class="row">
+        <span class="status" id="status"></span>
+        <div class="row-actions">
+          <button class="save-btn" id="saveBtn" style="display:none;">Save as card</button>
+          <button class="copy-btn" id="copyBtn" style="display:none;">Copy</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel flashcards">
+    <div class="flashcards-head">
+      <span class="label">Flashcards</span>
+      <div class="flashcards-head-actions">
+        <button class="quiz-btn" id="quizBtn" disabled>Quiz me</button>
+        <button class="clear-btn" id="clearFlashcardsBtn">Clear</button>
+      </div>
+    </div>
+    <div class="set-filter" id="setFilter" style="display:none;"></div>
+    <div id="flashcardsGrid">
+      <div class="flashcards-empty">Save a translation to start a deck. Tap a card to flip it.</div>
+    </div>
+  </div>
+
+  <div class="panel history collapsed" id="historyPanel">
+    <div class="history-head">
+      <button class="history-toggle" id="historyToggleBtn" aria-expanded="false">
+        <span class="label">History</span>
+        <span class="chevron" aria-hidden="true">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2.5 4.5L6 8L9.5 4.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+      </button>
+      <button class="clear-btn" id="clearHistoryBtn">Clear</button>
+    </div>
+    <div class="history-body" id="historyBody">
+      <div id="historyList">
+        <div class="history-empty">Words you look up will appear here.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="setModalOverlay">
+  <div class="modal-box">
+    <p class="modal-title" id="setModalTitle">Add to a set</p>
+    <p class="modal-subtitle">Leave blank to save without a set.</p>
+    <input type="text" class="modal-input" id="setModalInput" placeholder="e.g. Food, Travel">
+    <div class="modal-suggestions" id="setModalSuggestions"></div>
+    <div class="modal-actions">
+      <button class="modal-btn secondary" id="setModalCancel">Cancel</button>
+      <button class="modal-btn primary" id="setModalSave">Save</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="quizOverlay">
+  <div class="modal-box quiz-box">
+    <div class="quiz-head">
+      <span class="quiz-progress" id="quizProgress">1 / 10</span>
+      <span class="quiz-score" id="quizScore">0 correct</span>
+      <button class="quiz-close" id="quizCloseBtn" aria-label="Close quiz">&times;</button>
+    </div>
+
+    <div id="quizActive">
+      <p class="quiz-hint" id="quizHint">What's the translation?</p>
+      <p class="quiz-prompt" id="quizPrompt"></p>
+      <input type="text" class="modal-input quiz-input" id="quizInput" placeholder="Type your answer" autocomplete="off">
+      <div class="quiz-feedback" id="quizFeedback" style="display:none;"></div>
+      <div class="modal-actions">
+        <button class="modal-btn secondary" id="quizSkipBtn">Skip</button>
+        <button class="modal-btn primary" id="quizCheckBtn">Check</button>
+      </div>
+    </div>
+
+    <div id="quizSummary" style="display:none;">
+      <p class="modal-title">Quiz complete</p>
+      <p class="quiz-summary-score" id="quizSummaryScore"></p>
+      <div class="modal-actions">
+        <button class="modal-btn secondary" id="quizDoneBtn">Close</button>
+        <button class="modal-btn primary" id="quizRestartBtn">Try again</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="practiceOverlay">
+  <div class="modal-box practice-box">
+    <div class="quiz-head">
+      <p class="modal-title" id="practiceTitle" style="margin:0;">Write a sentence</p>
+      <button class="quiz-close" id="practiceCloseBtn" aria-label="Close">&times;</button>
+    </div>
+    <p class="modal-subtitle" id="practiceSubtitle">Use the word in a sentence.</p>
+
+    <textarea class="modal-input practice-input" id="practiceInput" rows="3" placeholder="Write your sentence here"></textarea>
+
+    <div class="quiz-feedback" id="practiceFeedback" style="display:none;"></div>
+
+    <div class="modal-actions">
+      <button class="modal-btn secondary" id="practiceTryAnotherBtn" style="display:none;">Try another</button>
+      <button class="modal-btn primary" id="practiceCheckBtn">Check</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="exampleOverlay">
+  <div class="modal-box practice-box">
+    <div class="quiz-head">
+      <p class="modal-title" id="exampleTitle" style="margin:0;">Example</p>
+      <button class="quiz-close" id="exampleCloseBtn" aria-label="Close">&times;</button>
+    </div>
+    <div id="exampleContent" class="example-modal-content"></div>
+    <div class="modal-actions">
+      <button class="modal-btn secondary" id="exampleCloseBtn2">Close</button>
+      <button class="modal-btn primary" id="exampleAnotherBtn">Show another</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // --- Storage helpers: replace window.storage (claude.ai only) with a
+  // small Supabase-backed API route, protected by a one-time passphrase. ---
+  function getAppSecret() {
+    let secret = localStorage.getItem('app_secret');
+    if (!secret) {
+      secret = window.prompt('Enter your app passphrase (must match APP_SECRET in Vercel):') || '';
+      if (secret) localStorage.setItem('app_secret', secret);
+    }
+    return secret;
+  }
+
+  async function appStorageGet(key) {
+    try {
+      const res = await fetch('/api/storage?key=' + encodeURIComponent(key), {
+        headers: { 'x-app-secret': getAppSecret() }
+      });
+      if (!res.ok) return null;
+      const data = await res.json();
+      return { value: data.value != null ? JSON.stringify(data.value) : null };
+    } catch (e) {
+      console.error('Storage get failed', e);
+      return null;
+    }
+  }
+
+  async function appStorageSet(key, jsonString) {
+    try {
+      await fetch('/api/storage?key=' + encodeURIComponent(key), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-app-secret': getAppSecret() },
+        body: JSON.stringify({ value: JSON.parse(jsonString) })
+      });
+    } catch (e) {
+      console.error('Storage set failed', e);
+    }
+  }
+
+  async function appStorageDelete(key) {
+    try {
+      await fetch('/api/storage?key=' + encodeURIComponent(key), {
+        method: 'DELETE',
+        headers: { 'x-app-secret': getAppSecret() }
+      });
+    } catch (e) {
+      console.error('Storage delete failed', e);
+    }
+  }
+
+  const input = document.getElementById('input');
+  const inputWrap = document.getElementById('inputWrap');
+  const translateBtn = document.getElementById('translateBtn');
+  const langBtn = document.getElementById('langBtn');
+  const resultWrap = document.getElementById('resultWrap');
+  const detectedDirectionEl = document.getElementById('detectedDirection');
+  const metaEl = document.getElementById('meta');
+  const resultEl = document.getElementById('result');
+  const illustrationWrapEl = document.getElementById('illustrationWrap');
+  const nuanceSection = document.getElementById('nuanceSection');
+  const nuanceEl = document.getElementById('nuance');
+  const examplesSection = document.getElementById('examplesSection');
+  const examplesListEl = document.getElementById('examplesList');
+  const relatedSection = document.getElementById('relatedSection');
+  const relatedListEl = document.getElementById('relatedList');
+  const statusEl = document.getElementById('status');
+  const copyBtn = document.getElementById('copyBtn');
+  const saveBtn = document.getElementById('saveBtn');
+  const historyListEl = document.getElementById('historyList');
+  const clearHistoryBtn = document.getElementById('clearHistoryBtn');
+  const historyPanel = document.getElementById('historyPanel');
+  const historyToggleBtn = document.getElementById('historyToggleBtn');
+  const flashcardsGridEl = document.getElementById('flashcardsGrid');
+  const setFilterEl = document.getElementById('setFilter');
+  const clearFlashcardsBtn = document.getElementById('clearFlashcardsBtn');
+  const quizBtn = document.getElementById('quizBtn');
+  const quizOverlay = document.getElementById('quizOverlay');
+  const quizActiveEl = document.getElementById('quizActive');
+  const quizSummaryEl = document.getElementById('quizSummary');
+  const quizProgressEl = document.getElementById('quizProgress');
+  const quizScoreEl = document.getElementById('quizScore');
+  const quizHintEl = document.getElementById('quizHint');
+  const quizPromptEl = document.getElementById('quizPrompt');
+  const quizInputEl = document.getElementById('quizInput');
+  const quizFeedbackEl = document.getElementById('quizFeedback');
+  const quizCheckBtn = document.getElementById('quizCheckBtn');
+  const quizSkipBtn = document.getElementById('quizSkipBtn');
+  const quizCloseBtn = document.getElementById('quizCloseBtn');
+  const quizDoneBtn = document.getElementById('quizDoneBtn');
+  const quizRestartBtn = document.getElementById('quizRestartBtn');
+  const quizSummaryScoreEl = document.getElementById('quizSummaryScore');
+  const practiceOverlay = document.getElementById('practiceOverlay');
+  const practiceTitleEl = document.getElementById('practiceTitle');
+  const practiceSubtitleEl = document.getElementById('practiceSubtitle');
+  const practiceInputEl = document.getElementById('practiceInput');
+  const practiceFeedbackEl = document.getElementById('practiceFeedback');
+  const practiceCheckBtn = document.getElementById('practiceCheckBtn');
+  const practiceTryAnotherBtn = document.getElementById('practiceTryAnotherBtn');
+  const practiceCloseBtn = document.getElementById('practiceCloseBtn');
+  const exampleOverlay = document.getElementById('exampleOverlay');
+  const exampleTitleEl = document.getElementById('exampleTitle');
+  const exampleContentEl = document.getElementById('exampleContent');
+  const exampleCloseBtn = document.getElementById('exampleCloseBtn');
+  const exampleCloseBtn2 = document.getElementById('exampleCloseBtn2');
+  const exampleAnotherBtn = document.getElementById('exampleAnotherBtn');
+  const setModalOverlay = document.getElementById('setModalOverlay');
+  const setModalTitle = document.getElementById('setModalTitle');
+  const setModalInput = document.getElementById('setModalInput');
+  const setModalSuggestions = document.getElementById('setModalSuggestions');
+  const setModalCancel = document.getElementById('setModalCancel');
+  const setModalSave = document.getElementById('setModalSave');
+
+  const HISTORY_KEY = 'history';
+  const MAX_HISTORY = 50;
+  const FLASHCARDS_KEY = 'flashcards';
+  const LANG_NAMES = { ko: '한국어', en: 'English', ja: '日本語' };
+  const LANG_NAMES_EN = { ko: 'Korean', en: 'English', ja: 'Japanese' };
+
+  let otherLang = 'en';
+  let requestId = 0;
+  let historyItems = [];
+  let flashcards = [];
+  let currentEntry = null;
+  let activeSet = 'all';
+  let lastUsedSet = '';
+  let quizDeck = [];
+  let quizIndex = 0;
+  let quizScore = 0;
+  let quizAnswered = false;
+
+  loadHistory();
+  loadFlashcards();
+  resultWrap.classList.add('visible');
+
+  input.addEventListener('focus', () => inputWrap.classList.add('focused'));
+  input.addEventListener('blur', () => {
+    inputWrap.classList.remove('focused');
+  });
+
+  langBtn.addEventListener('click', () => {
+    otherLang = otherLang === 'en' ? 'ja' : 'en';
+    applyLangPair();
+    requestId++;
+    input.value = '';
+    translateBtn.disabled = true;
+    resetResult();
+    input.focus();
+  });
+
+  function applyLangPair() {
+    langBtn.textContent = 'Korean ⇄ ' + LANG_NAMES_EN[otherLang];
+    input.placeholder = otherLang === 'ja'
+      ? 'Type in 한국어 or 日本語'
+      : 'Type in English or 한국어';
+  }
+  applyLangPair();
+
+  input.addEventListener('input', () => {
+    autoResize();
+    const text = input.value.trim();
+    translateBtn.disabled = !text;
+    if (!text) {
+      resetResult();
+    }
+  });
+
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && e.ctrlKey) {
+      e.preventDefault();
+      const text = input.value.trim();
+      if (text) translate(text);
+    }
+  });
+
+  translateBtn.addEventListener('click', () => {
+    const text = input.value.trim();
+    if (!text) return;
+    translate(text);
+  });
+
+  function resetResult() {
+    detectedDirectionEl.style.display = 'none';
+    metaEl.style.display = 'none';
+    resultEl.classList.remove('loading');
+    resultEl.textContent = 'Your translation will appear here.';
+    resultEl.classList.add('empty');
+    hideIllustration();
+    nuanceSection.style.display = 'none';
+    examplesSection.style.display = 'none';
+    relatedSection.style.display = 'none';
+    statusEl.textContent = '';
+    copyBtn.style.display = 'none';
+    saveBtn.style.display = 'none';
+    currentEntry = null;
+  }
+  function autoResize() {
+    input.style.height = 'auto';
+    input.style.height = input.scrollHeight + 'px';
+  }
+
+  function hideIllustration() {
+    illustrationWrapEl.style.display = 'none';
+    illustrationWrapEl.innerHTML = '';
+  }
+
+  function showIllustrationSvg(svgMarkup) {
+    const trimmed = (svgMarkup || '').trim();
+    if (!trimmed.startsWith('<svg')) {
+      hideIllustration();
+      return;
+    }
+    illustrationWrapEl.style.display = 'block';
+    illustrationWrapEl.innerHTML = '<div class="illustration-box">' + trimmed + '</div>';
+  }
+
+  function showIllustration(parsed) {
+    const photoUrl = (parsed.imageUrl || '').trim();
+    if (photoUrl && /^https?:\/\//i.test(photoUrl)) {
+      illustrationWrapEl.style.display = 'block';
+      illustrationWrapEl.innerHTML = '';
+      const img = document.createElement('img');
+      img.className = 'illustration-photo';
+      img.src = encodeURI(photoUrl);
+      img.alt = parsed.translation || '';
+      img.loading = 'lazy';
+      img.addEventListener('error', () => showIllustrationSvg(parsed.illustrationSvg));
+      illustrationWrapEl.appendChild(img);
+    } else {
+      showIllustrationSvg(parsed.illustrationSvg);
+    }
+  }
+
+  async function translate(text) {
+    const myId = ++requestId;
+    resultWrap.classList.remove('visible');
+    resultEl.classList.remove('empty');
+    resultEl.classList.add('loading');
+    resultEl.innerHTML = '<span class="loading-dots"><span></span><span></span><span></span></span><span>Translating</span>';
+    hideIllustration();
+    metaEl.style.display = 'none';
+    detectedDirectionEl.style.display = 'none';
+    nuanceSection.style.display = 'none';
+    examplesSection.style.display = 'none';
+    relatedSection.style.display = 'none';
+    requestAnimationFrame(() => resultWrap.classList.add('visible'));
+    statusEl.textContent = '';
+    translateBtn.disabled = true;
+
+    const otherLangName = LANG_NAMES_EN[otherLang];
+
+    try {
+      const response = await fetch('/api/claude', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          max_tokens: 1800,
+          tools: [{ type: 'web_search_20250305', name: 'web_search' }],
+          system: 'You are a bilingual Korean-' + otherLangName + ' dictionary and translation tutor. Given a word, phrase, or sentence, first detect whether it is written in Korean or ' + otherLangName + ', then translate it into the other of those two languages the way a knowledgeable, thorough tutor would when asked to translate something in detail. Work out the core concept in English first (even if the input is Korean or Japanese), since image search works best in English. Use the web_search tool to search for something like \"<english concept> wikimedia commons\" or \"<english concept> site:commons.wikimedia.org\". Search results give you page titles and links, not raw image file URLs directly - so once you find a relevant result whose title looks like \"File:SomeName.jpg - Wikimedia Commons\" (or similar, on commons.wikimedia.org or wikipedia.org), take the exact filename from that title (including its extension) and build the image URL yourself using this exact pattern, which always works without needing any internal file path: https://commons.wikimedia.org/wiki/Special:FilePath/ followed by the filename with spaces replaced by underscores. For example a result titled \"File:Red Maple Tree.jpg - Wikimedia Commons\" becomes https://commons.wikimedia.org/wiki/Special:FilePath/Red_Maple_Tree.jpg - do this instead of trying to find or guess an upload.wikimedia.org URL directly. If the first search does not turn up a usable File: result, try at least one more search with a different or more general phrasing before giving up - most concrete nouns, common verbs, and even many everyday abstract concepts have a usable photo on Wikimedia Commons. Only leave imageUrl empty if you have tried more than one search and truly found no File: page to use. After that, respond with ONLY a JSON object as your final answer, no markdown fences, no preamble, in this exact shape: {"detected":"ko" or "' + otherLang + '" (the language of the INPUT text, must be one of these two codes),"romanization":"Revised Romanization of whichever side is Korean - the input itself if it is Korean, or your Korean translation if the input was ' + otherLangName + '","partOfSpeech":"e.g. noun, verb, adjective, expression, idiom","translation":"the main natural translation, in the language that is NOT the input language","imageUrl":"a direct link to a real photo file from your search that illustrates the core concept, or empty string if none found","illustrationSvg":"a single simple SVG illustration of the core concept behind this word or phrase, as one complete self-contained string starting with <svg and ending with </svg>. Use viewBox=\"0 0 200 200\". Keep it minimal and iconographic - a flat, simple glyph-style icon with at most 3-4 shapes or paths, not a detailed scene. Only use these two colors for fill or stroke: #1B2438 and #A6321C. No gradients, no other colors, no <text> elements, no external image references, no <script> tags. Pick the closest concrete, drawable concept even for abstract words (e.g. for gratitude, draw a simple gift box or a heart). Always provide a valid complete SVG, never leave this field empty - this is used as a fallback if imageUrl is empty.","nuance":"1-3 sentences on register (formal/informal/honorific), connotation, and when a native speaker would actually use this versus alternatives","examples":[{"ko":"a natural Korean sentence using the word or phrase","other":"its natural ' + otherLangName + ' translation"},{"ko":"...","other":"..."},{"ko":"...","other":"..."}],"related":[{"word":"a related word or expression in the SAME language as the input","gloss":"a short gloss in the other language"}]}. Give 2-3 examples that show natural everyday use. Give 2-4 related items (synonyms, antonyms, or commonly confused words). If the input is a full sentence rather than a word/phrase, still fill every field as best fits (e.g. partOfSpeech can be "sentence"). Only ever detect Korean or ' + otherLangName + ' - if the input looks like a third language, do your best guess between those two.',
+          messages: [{ role: 'user', content: text }]
+        })
+      });
+
+      const data = await response.json();
+      if (myId !== requestId) return;
+
+      const textBlocks = (data.content || []).filter(b => b.type === 'text' && b.text);
+      const raw = textBlocks.length ? textBlocks[textBlocks.length - 1].text.trim() : '';
+      const cleaned = raw.replace(/^```json/i, '').replace(/^```/, '').replace(/```$/, '').trim();
+      const parsed = JSON.parse(cleaned);
+      const detectedDirection = parsed.detected === otherLang ? (otherLang + '-ko') : ('ko-' + otherLang);
+
+      renderResult(parsed, detectedDirection);
+      currentEntry = { source: text, direction: detectedDirection, result: parsed };
+      saveToHistory(text, detectedDirection, parsed);
+      translateBtn.disabled = !input.value.trim();
+    } catch (err) {
+      if (myId !== requestId) return;
+      resultEl.classList.remove('loading');
+      resultEl.classList.add('empty');
+      resultEl.textContent = "Couldn't translate that. Try again.";
+      translateBtn.disabled = !input.value.trim();
+      console.error(err);
+    }
+  }
+
+  function renderResult(parsed, entryDirection) {
+    resultWrap.classList.remove('visible');
+
+    resultEl.classList.remove('loading', 'empty');
+    resultEl.textContent = parsed.translation;
+    showIllustration(parsed);
+    statusEl.textContent = '';
+    copyBtn.style.display = 'inline-block';
+    copyBtn.dataset.text = parsed.translation;
+    saveBtn.style.display = 'inline-block';
+    updateSaveBtnState();
+
+    if (entryDirection) {
+      const parts = entryDirection.split('-');
+      const sourceCode = parts[0];
+      const targetCode = parts[1];
+      if (LANG_NAMES[sourceCode] && LANG_NAMES[targetCode]) {
+        detectedDirectionEl.textContent = LANG_NAMES[sourceCode] + ' → ' + LANG_NAMES[targetCode];
+        detectedDirectionEl.style.display = 'block';
+      } else {
+        detectedDirectionEl.style.display = 'none';
+      }
+    } else {
+      detectedDirectionEl.style.display = 'none';
+    }
+
+    if (parsed.romanization || parsed.partOfSpeech) {
+      metaEl.innerHTML = '';
+      if (parsed.romanization) {
+        metaEl.appendChild(document.createTextNode(parsed.romanization));
+      }
+      if (parsed.partOfSpeech) {
+        if (parsed.romanization) metaEl.appendChild(document.createTextNode('  ·  '));
+        const pos = document.createElement('span');
+        pos.className = 'pos';
+        pos.textContent = parsed.partOfSpeech;
+        metaEl.appendChild(pos);
+      }
+      metaEl.style.display = 'block';
+    } else {
+      metaEl.style.display = 'none';
+    }
+
+    if (parsed.nuance) {
+      nuanceEl.textContent = parsed.nuance;
+      nuanceSection.style.display = 'block';
+    } else {
+      nuanceSection.style.display = 'none';
+    }
+
+    if (Array.isArray(parsed.examples) && parsed.examples.length) {
+      examplesListEl.innerHTML = '';
+      parsed.examples.forEach(ex => {
+        const div = document.createElement('div');
+        div.className = 'example';
+        const ko = document.createElement('div');
+        ko.className = 'ko';
+        ko.textContent = ex.ko;
+        const other = document.createElement('div');
+        other.className = 'en';
+        other.textContent = ex.other;
+        div.appendChild(ko);
+        div.appendChild(other);
+        examplesListEl.appendChild(div);
+      });
+      examplesSection.style.display = 'block';
+    } else {
+      examplesSection.style.display = 'none';
+    }
+
+    if (Array.isArray(parsed.related) && parsed.related.length) {
+      relatedListEl.innerHTML = '';
+      parsed.related.forEach(r => {
+        const chip = document.createElement('div');
+        chip.className = 'related-item';
+        const word = document.createElement('span');
+        word.className = 'word';
+        word.textContent = r.word;
+        const gloss = document.createElement('span');
+        gloss.className = 'gloss';
+        gloss.textContent = r.gloss;
+        chip.appendChild(word);
+        chip.appendChild(gloss);
+        relatedListEl.appendChild(chip);
+      });
+      relatedSection.style.display = 'block';
+    } else {
+      relatedSection.style.display = 'none';
+    }
+
+    requestAnimationFrame(() => resultWrap.classList.add('visible'));
+  }
+
+  async function loadHistory() {
+    try {
+      const res = await appStorageGet(HISTORY_KEY);
+      historyItems = res && res.value ? JSON.parse(res.value) : [];
+    } catch (e) {
+      historyItems = [];
+    }
+    renderHistory();
+  }
+
+  async function saveToHistory(sourceText, dir, parsed) {
+    historyItems.unshift({ source: sourceText, direction: dir, result: parsed, ts: Date.now() });
+    if (historyItems.length > MAX_HISTORY) historyItems = historyItems.slice(0, MAX_HISTORY);
+    renderHistory();
+    try {
+      await appStorageSet(HISTORY_KEY, JSON.stringify(historyItems));
+    } catch (e) {
+      console.error('Could not save history', e);
+    }
+  }
+
+  async function persistHistory() {
+    try {
+      await appStorageSet(HISTORY_KEY, JSON.stringify(historyItems));
+    } catch (e) {
+      console.error('Could not save history', e);
+    }
+  }
+
+  function deleteHistoryItem(idx) {
+    historyItems.splice(idx, 1);
+    renderHistory();
+    persistHistory();
+  }
+
+  function renderHistory() {
+    if (!historyItems.length) {
+      historyListEl.innerHTML = '<div class="history-empty">Words you look up will appear here.</div>';
+      return;
+    }
+    historyListEl.innerHTML = '';
+    historyItems.forEach((item, idx) => {
+      const row = document.createElement('div');
+      row.className = 'history-item';
+
+      const main = document.createElement('div');
+      main.className = 'history-main';
+      main.addEventListener('click', () => loadHistoryItem(idx));
+
+      const source = document.createElement('span');
+      source.className = 'history-source';
+      source.textContent = item.source;
+      const translation = document.createElement('span');
+      translation.className = 'history-translation';
+      translation.textContent = item.result && item.result.translation ? item.result.translation : '';
+      main.appendChild(source);
+      main.appendChild(translation);
+
+      const remove = document.createElement('button');
+      remove.className = 'history-remove';
+      remove.setAttribute('aria-label', 'Remove from history');
+      remove.textContent = '\u00d7';
+      remove.addEventListener('click', (e) => {
+        e.stopPropagation();
+        deleteHistoryItem(idx);
+      });
+
+      row.appendChild(main);
+      row.appendChild(remove);
+      historyListEl.appendChild(row);
+    });
+  }
+
+  function loadHistoryItem(idx) {
+    const item = historyItems[idx];
+    if (!item) return;
+    requestId++;
+    const parts = item.direction.split('-');
+    const itemOtherLang = parts.find(p => p !== 'ko');
+    if (itemOtherLang && itemOtherLang !== otherLang) {
+      otherLang = itemOtherLang;
+      applyLangPair();
+    }
+    input.value = item.source;
+    autoResize();
+    translateBtn.disabled = false;
+    currentEntry = { source: item.source, direction: item.direction, result: item.result };
+    renderResult(item.result, item.direction);
+  }
+
+  clearHistoryBtn.addEventListener('click', async () => {
+    historyItems = [];
+    renderHistory();
+    try {
+      await appStorageDelete(HISTORY_KEY);
+    } catch (e) {}
+  });
+
+  historyToggleBtn.addEventListener('click', () => {
+    const collapsed = historyPanel.classList.toggle('collapsed');
+    historyToggleBtn.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+  });
+
+  copyBtn.addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(copyBtn.dataset.text || '');
+      const original = copyBtn.textContent;
+      copyBtn.textContent = 'Copied';
+      setTimeout(() => { copyBtn.textContent = original; }, 1200);
+    } catch (e) {}
+  });
+
+  let setModalResolve = null;
+
+  function openSetModal(title, currentValue) {
+    setModalTitle.textContent = title;
+    setModalInput.value = currentValue || '';
+    const names = getSetNames();
+    setModalSuggestions.innerHTML = '';
+    names.forEach(name => {
+      const pill = document.createElement('button');
+      pill.className = 'modal-suggestion';
+      pill.type = 'button';
+      pill.textContent = name;
+      pill.addEventListener('click', () => { setModalInput.value = name; });
+      setModalSuggestions.appendChild(pill);
+    });
+    setModalOverlay.classList.add('open');
+    setTimeout(() => setModalInput.focus(), 0);
+    return new Promise(resolve => { setModalResolve = resolve; });
+  }
+
+  function closeSetModal(result) {
+    setModalOverlay.classList.remove('open');
+    if (setModalResolve) {
+      const resolve = setModalResolve;
+      setModalResolve = null;
+      resolve(result);
+    }
+  }
+
+  setModalSave.addEventListener('click', () => closeSetModal(setModalInput.value.trim()));
+  setModalCancel.addEventListener('click', () => closeSetModal(null));
+  setModalOverlay.addEventListener('click', (e) => {
+    if (e.target === setModalOverlay) closeSetModal(null);
+  });
+  setModalInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      closeSetModal(setModalInput.value.trim());
+    } else if (e.key === 'Escape') {
+      closeSetModal(null);
+    }
+  });
+
+  saveBtn.addEventListener('click', async () => {
+    if (!currentEntry) return;
+    const existing = findFlashcard(currentEntry);
+    if (existing) {
+      deleteFlashcard(existing.id);
+      updateSaveBtnState();
+      return;
+    }
+    const result = await openSetModal('Add to a set', lastUsedSet);
+    if (result === null) return;
+    if (result) lastUsedSet = result;
+    saveFlashcard(currentEntry, result || null);
+    updateSaveBtnState();
+  });
+
+  function findFlashcard(entry) {
+    return flashcards.find(c => c.source === entry.source && c.direction === entry.direction);
+  }
+
+  function updateSaveBtnState() {
+    if (!currentEntry) return;
+    const saved = !!findFlashcard(currentEntry);
+    saveBtn.textContent = saved ? 'Saved as card' : 'Save as card';
+    saveBtn.classList.toggle('saved', saved);
+  }
+
+  async function loadFlashcards() {
+    try {
+      const res = await appStorageGet(FLASHCARDS_KEY);
+      flashcards = res && res.value ? JSON.parse(res.value) : [];
+    } catch (e) {
+      flashcards = [];
+    }
+    renderFlashcards();
+  }
+
+  async function persistFlashcards() {
+    try {
+      await appStorageSet(FLASHCARDS_KEY, JSON.stringify(flashcards));
+    } catch (e) {
+      console.error('Could not save flashcards', e);
+    }
+  }
+
+  function makeId() {
+    return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+  }
+
+  function saveFlashcard(entry, setName) {
+    flashcards.unshift({
+      id: makeId(),
+      source: entry.source,
+      direction: entry.direction,
+      translation: entry.result.translation,
+      romanization: entry.result.romanization || '',
+      illustrationSvg: entry.result.illustrationSvg || '',
+      imageUrl: entry.result.imageUrl || '',
+      examples: Array.isArray(entry.result.examples) ? entry.result.examples : [],
+      set: setName || null,
+      ts: Date.now()
+    });
+    renderFlashcards();
+    persistFlashcards();
+  }
+
+  function deleteFlashcard(id) {
+    flashcards = flashcards.filter(c => c.id !== id);
+    if (activeSet !== 'all' && activeSet !== 'unsorted' && !flashcards.some(c => c.set === activeSet)) {
+      activeSet = 'all';
+    }
+    renderFlashcards();
+    persistFlashcards();
+    updateSaveBtnState();
+  }
+
+  async function reassignFlashcard(id) {
+    const card = flashcards.find(c => c.id === id);
+    if (!card) return;
+    const result = await openSetModal('Move "' + card.source + '"', card.set || '');
+    if (result === null) return;
+    card.set = result || null;
+    if (result) lastUsedSet = result;
+    renderFlashcards();
+    persistFlashcards();
+  }
+
+  function getSetNames() {
+    const names = new Set();
+    flashcards.forEach(c => { if (c.set) names.add(c.set); });
+    return Array.from(names).sort((a, b) => a.localeCompare(b));
+  }
+
+  function getVisibleCards() {
+    return flashcards.filter(c => {
+      if (activeSet === 'all') return true;
+      if (activeSet === 'unsorted') return !c.set;
+      return c.set === activeSet;
+    });
+  }
+
+  function renderFlashcards() {
+    if (!flashcards.length) {
+      setFilterEl.style.display = 'none';
+      setFilterEl.innerHTML = '';
+      flashcardsGridEl.innerHTML = '<div class="flashcards-empty">Save a translation to start a deck. Tap a card to flip it.</div>';
+      quizBtn.disabled = true;
+      return;
+    }
+
+    const setNames = getSetNames();
+    const unsortedCount = flashcards.filter(c => !c.set).length;
+
+    if (setNames.length) {
+      setFilterEl.style.display = 'flex';
+      setFilterEl.innerHTML = '';
+
+      const allPill = document.createElement('button');
+      allPill.className = 'set-pill' + (activeSet === 'all' ? ' active' : '');
+      allPill.innerHTML = 'All <span class="count">' + flashcards.length + '</span>';
+      allPill.addEventListener('click', () => { activeSet = 'all'; renderFlashcards(); });
+      setFilterEl.appendChild(allPill);
+
+      setNames.forEach(name => {
+        const count = flashcards.filter(c => c.set === name).length;
+        const pill = document.createElement('button');
+        pill.className = 'set-pill' + (activeSet === name ? ' active' : '');
+        pill.innerHTML = name.replace(/</g, '&lt;') + ' <span class="count">' + count + '</span>';
+        pill.addEventListener('click', () => { activeSet = name; renderFlashcards(); });
+        setFilterEl.appendChild(pill);
+      });
+
+      if (unsortedCount) {
+        const pill = document.createElement('button');
+        pill.className = 'set-pill' + (activeSet === 'unsorted' ? ' active' : '');
+        pill.innerHTML = 'Unsorted <span class="count">' + unsortedCount + '</span>';
+        pill.addEventListener('click', () => { activeSet = 'unsorted'; renderFlashcards(); });
+        setFilterEl.appendChild(pill);
+      }
+    } else {
+      setFilterEl.style.display = 'none';
+      setFilterEl.innerHTML = '';
+      activeSet = 'all';
+    }
+
+    const visible = getVisibleCards();
+    quizBtn.disabled = visible.length < 1;
+
+    if (!visible.length) {
+      flashcardsGridEl.innerHTML = '<div class="flashcards-empty">No cards in this set yet.</div>';
+      return;
+    }
+
+    const grid = document.createElement('div');
+    grid.className = 'flashcards-grid';
+    visible.forEach(card => {
+      const outer = document.createElement('div');
+      outer.className = 'flashcard';
+
+      const inner = document.createElement('div');
+      inner.className = 'flashcard-inner';
+      inner.addEventListener('click', () => outer.classList.toggle('flipped'));
+
+      function buildCardIllustration() {
+        if (card.imageUrl && /^https?:\/\//i.test(card.imageUrl)) {
+          const img = document.createElement('img');
+          img.className = 'flashcard-photo';
+          img.src = encodeURI(card.imageUrl);
+          img.alt = '';
+          img.loading = 'lazy';
+          img.addEventListener('error', () => { img.style.display = 'none'; });
+          return img;
+        }
+        if (card.illustrationSvg && card.illustrationSvg.trim().startsWith('<svg')) {
+          const icon = document.createElement('div');
+          icon.className = 'flashcard-icon';
+          icon.innerHTML = card.illustrationSvg;
+          return icon;
+        }
+        return null;
+      }
+
+      const front = document.createElement('div');
+      front.className = 'flashcard-face flashcard-front';
+      const frontText = document.createElement('div');
+      frontText.className = 'flashcard-text';
+      frontText.textContent = card.source;
+      front.appendChild(frontText);
+      const frontIllus = buildCardIllustration();
+      if (frontIllus) front.appendChild(frontIllus);
+
+      const back = document.createElement('div');
+      back.className = 'flashcard-face flashcard-back';
+      const backText = document.createElement('div');
+      backText.className = 'flashcard-text';
+      backText.textContent = card.translation;
+      back.appendChild(backText);
+      const backIllus = buildCardIllustration();
+      if (backIllus) back.appendChild(backIllus);
+
+      const tag = document.createElement('button');
+      tag.className = 'flashcard-tag' + (card.set ? '' : ' unset');
+      tag.textContent = card.set || '+ set';
+      tag.addEventListener('click', (e) => {
+        e.stopPropagation();
+        reassignFlashcard(card.id);
+      });
+
+      const remove = document.createElement('button');
+      remove.className = 'flashcard-remove';
+      remove.setAttribute('aria-label', 'Remove card');
+      remove.textContent = '\u00d7';
+      remove.addEventListener('click', (e) => {
+        e.stopPropagation();
+        deleteFlashcard(card.id);
+      });
+
+      inner.appendChild(front);
+      inner.appendChild(back);
+      outer.appendChild(inner);
+      outer.appendChild(tag);
+      outer.appendChild(remove);
+
+      const cell = document.createElement('div');
+      cell.className = 'flashcard-cell';
+
+      const btnRow = document.createElement('div');
+      btnRow.className = 'flashcard-btn-row';
+
+      const exampleBtn = document.createElement('button');
+      exampleBtn.className = 'flashcard-practice-btn';
+      exampleBtn.textContent = 'Example';
+      exampleBtn.addEventListener('click', () => openExampleModal(card));
+
+      const practiceBtn = document.createElement('button');
+      practiceBtn.className = 'flashcard-practice-btn';
+      practiceBtn.textContent = 'Practice sentence';
+      practiceBtn.addEventListener('click', () => openPracticeModal(card));
+
+      btnRow.appendChild(exampleBtn);
+      btnRow.appendChild(practiceBtn);
+      cell.appendChild(outer);
+      cell.appendChild(btnRow);
+      grid.appendChild(cell);
+    });
+    flashcardsGridEl.innerHTML = '';
+    flashcardsGridEl.appendChild(grid);
+  }
+
+  clearFlashcardsBtn.addEventListener('click', async () => {
+    flashcards = [];
+    activeSet = 'all';
+    renderFlashcards();
+    updateSaveBtnState();
+    try {
+      await appStorageDelete(FLASHCARDS_KEY);
+    } catch (e) {}
+  });
+
+  function shuffle(arr) {
+    const a = arr.slice();
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  function normalizeCore(str) {
+    let s = str.toLowerCase().trim();
+    s = s.replace(/^to\s+/, '');
+    s = s.replace(/[.,!?;:'"()]/g, '');
+    s = s.replace(/\s+/g, ' ').trim();
+    return s;
+  }
+
+  function getAcceptableAnswers(translation) {
+    const noParens = translation.replace(/\([^)]*\)/g, '');
+    return noParens
+      .split(/[\/,;]|(?:\bor\b)/i)
+      .map(s => normalizeCore(s))
+      .filter(Boolean);
+  }
+
+  quizBtn.addEventListener('click', () => {
+    const pool = getVisibleCards();
+    if (!pool.length) return;
+    quizDeck = shuffle(pool);
+    quizIndex = 0;
+    quizScore = 0;
+    quizOverlay.classList.add('open');
+    quizActiveEl.style.display = 'block';
+    quizSummaryEl.style.display = 'none';
+    showQuizCard();
+  });
+
+  function showQuizCard() {
+    const card = quizDeck[quizIndex];
+    quizAnswered = false;
+    quizProgressEl.textContent = (quizIndex + 1) + ' / ' + quizDeck.length;
+    quizScoreEl.textContent = quizScore + ' correct';
+    const targetCode = card.direction.split('-')[1];
+    quizHintEl.textContent = 'What does this mean in ' + (LANG_NAMES_EN[targetCode] || targetCode) + '?';
+    quizPromptEl.textContent = card.source;
+    quizInputEl.value = '';
+    quizFeedbackEl.style.display = 'none';
+    quizFeedbackEl.className = 'quiz-feedback';
+    quizCheckBtn.textContent = 'Check';
+    quizSkipBtn.style.display = 'inline-block';
+    setTimeout(() => quizInputEl.focus(), 0);
+  }
+
+  function checkQuizAnswer() {
+    const card = quizDeck[quizIndex];
+    const given = normalizeCore(quizInputEl.value);
+    const accepted = getAcceptableAnswers(card.translation);
+    const isCorrect = given.length > 0 && accepted.includes(given);
+    if (isCorrect) quizScore++;
+
+    quizFeedbackEl.style.display = 'block';
+    quizFeedbackEl.className = 'quiz-feedback ' + (isCorrect ? 'correct' : 'incorrect');
+    if (isCorrect) {
+      quizFeedbackEl.textContent = 'Correct.';
+    } else {
+      quizFeedbackEl.innerHTML = 'Not quite. Answer: <span class="answer">' + card.translation + '</span>';
+    }
+    quizScoreEl.textContent = quizScore + ' correct';
+    quizCheckBtn.textContent = quizIndex + 1 < quizDeck.length ? 'Next' : 'Finish';
+    quizSkipBtn.style.display = 'none';
+    quizAnswered = true;
+  }
+
+  function advanceQuiz() {
+    quizIndex++;
+    if (quizIndex >= quizDeck.length) {
+      showQuizSummary();
+    } else {
+      showQuizCard();
+    }
+  }
+
+  function showQuizSummary() {
+    quizActiveEl.style.display = 'none';
+    quizSummaryEl.style.display = 'block';
+    quizSummaryScoreEl.textContent = quizScore + ' / ' + quizDeck.length + ' correct';
+  }
+
+  quizCheckBtn.addEventListener('click', () => {
+    if (quizAnswered) {
+      advanceQuiz();
+    } else {
+      checkQuizAnswer();
+    }
+  });
+
+  quizSkipBtn.addEventListener('click', () => {
+    if (quizAnswered) return;
+    quizFeedbackEl.style.display = 'block';
+    quizFeedbackEl.className = 'quiz-feedback incorrect';
+    quizFeedbackEl.innerHTML = 'Skipped. Answer: <span class="answer">' + quizDeck[quizIndex].translation + '</span>';
+    quizCheckBtn.textContent = quizIndex + 1 < quizDeck.length ? 'Next' : 'Finish';
+    quizSkipBtn.style.display = 'none';
+    quizAnswered = true;
+  });
+
+  quizInputEl.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      if (quizAnswered) {
+        advanceQuiz();
+      } else {
+        checkQuizAnswer();
+      }
+    }
+  });
+
+  quizCloseBtn.addEventListener('click', () => quizOverlay.classList.remove('open'));
+  quizDoneBtn.addEventListener('click', () => quizOverlay.classList.remove('open'));
+  quizRestartBtn.addEventListener('click', () => {
+    quizDeck = shuffle(quizDeck);
+    quizIndex = 0;
+    quizScore = 0;
+    quizActiveEl.style.display = 'block';
+    quizSummaryEl.style.display = 'none';
+    showQuizCard();
+  });
+  quizOverlay.addEventListener('click', (e) => {
+    if (e.target === quizOverlay) quizOverlay.classList.remove('open');
+  });
+
+  let practiceCard = null;
+  let exampleCard = null;
+
+  function openPracticeModal(card) {
+    practiceCard = card;
+    const promptLangCode = card.direction.split('-')[0];
+    const promptLangName = LANG_NAMES_EN[promptLangCode] || promptLangCode;
+    practiceTitleEl.textContent = 'Write a sentence';
+    practiceSubtitleEl.textContent = 'Use "' + card.source + '" in a ' + promptLangName + ' sentence.';
+    practiceInputEl.value = '';
+    practiceFeedbackEl.style.display = 'none';
+    practiceFeedbackEl.className = 'quiz-feedback';
+    practiceCheckBtn.style.display = 'inline-block';
+    practiceCheckBtn.textContent = 'Check';
+    practiceCheckBtn.disabled = false;
+    practiceTryAnotherBtn.style.display = 'none';
+    practiceOverlay.classList.add('open');
+    setTimeout(() => practiceInputEl.focus(), 0);
+  }
+
+  function closePracticeModal() {
+    practiceOverlay.classList.remove('open');
+    practiceCard = null;
+  }
+
+  function highlightForeignText(text) {
+    const esc = document.createElement('div');
+    esc.textContent = text || '';
+    const escaped = esc.innerHTML;
+    return escaped.replace(
+      /[\uAC00-\uD7A3\u1100-\u11FF\u3130-\u318F\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FFF]+/g,
+      function (match) { return '<strong class="feedback-foreign">' + match + '</strong>'; }
+    );
+  }
+
+  function renderCardExample(example) {
+    exampleContentEl.innerHTML = '';
+    const wrap = document.createElement('div');
+    wrap.className = 'example';
+
+    const ko = document.createElement('div');
+    ko.className = 'ko';
+    ko.textContent = example.ko;
+
+    const toggleBtn = document.createElement('button');
+    toggleBtn.className = 'example-reveal-btn';
+    toggleBtn.textContent = 'Show translation';
+
+    const other = document.createElement('div');
+    other.className = 'en example-translation';
+    other.textContent = example.other;
+    other.style.display = 'none';
+
+    toggleBtn.addEventListener('click', () => {
+      const showing = other.style.display !== 'none';
+      other.style.display = showing ? 'none' : 'block';
+      toggleBtn.textContent = showing ? 'Show translation' : 'Hide translation';
+    });
+
+    wrap.appendChild(ko);
+    wrap.appendChild(toggleBtn);
+    wrap.appendChild(other);
+    exampleContentEl.appendChild(wrap);
+  }
+
+  function openExampleModal(card) {
+    exampleCard = card;
+    exampleTitleEl.textContent = card.source;
+    exampleAnotherBtn.disabled = false;
+    exampleAnotherBtn.textContent = 'Show another';
+    exampleOverlay.classList.add('open');
+
+    if (card.examples && card.examples.length) {
+      renderCardExample(card.examples[Math.floor(Math.random() * card.examples.length)]);
+    } else {
+      exampleContentEl.innerHTML = '<div class="illustration-loading">Loading example…</div>';
+      fetchCardExample(card);
+    }
+  }
+
+  function closeExampleModal() {
+    exampleOverlay.classList.remove('open');
+    exampleCard = null;
+  }
+
+  async function fetchCardExample(card) {
+    const sourceCode = card.direction.split('-')[0];
+    const otherCode = card.direction.split('-').find(p => p !== 'ko') || 'en';
+    const sourceLangName = LANG_NAMES_EN[sourceCode] || sourceCode;
+    const otherLangName = LANG_NAMES_EN[otherCode] || otherCode;
+
+    try {
+      const response = await fetch('/api/claude', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-6',
+          max_tokens: 300,
+          system: 'Give one natural, everyday example sentence using the ' + sourceLangName + ' word or phrase "' + card.source + '" (meaning "' + card.translation + '"). Provide the sentence in both Korean and ' + otherLangName + '. Make it different from typical textbook examples where possible. Respond with ONLY a JSON object, no markdown fences, no preamble, in this exact shape: {"ko":"the Korean version of the sentence","other":"its ' + otherLangName + ' translation"}.',
+          messages: [{ role: 'user', content: card.source }]
+        })
+      });
+      const data = await response.json();
+      const textBlocks = (data.content || []).filter(b => b.type === 'text' && b.text);
+      const raw = textBlocks.length ? textBlocks[textBlocks.length - 1].text.trim() : '';
+      const cleaned = raw.replace(/^```json/i, '').replace(/^```/, '').replace(/```$/, '').trim();
+      const example = JSON.parse(cleaned);
+
+      if (exampleCard !== card) return;
+      renderCardExample(example);
+
+      card.examples = Array.isArray(card.examples) ? card.examples : [];
+      card.examples.push(example);
+      if (card.examples.length > 6) card.examples = card.examples.slice(-6);
+      persistFlashcards();
+    } catch (err) {
+      if (exampleCard !== card) return;
+      exampleContentEl.innerHTML = '<div class="illustration-loading">Couldn\'t load an example.</div>';
+      console.error(err);
+    }
+  }
+
+  exampleAnotherBtn.addEventListener('click', () => {
+    if (!exampleCard) return;
+    exampleContentEl.innerHTML = '<div class="illustration-loading">Loading example…</div>';
+    fetchCardExample(exampleCard);
+  });
+  exampleCloseBtn.addEventListener('click', closeExampleModal);
+  exampleCloseBtn2.addEventListener('click', closeExampleModal);
+  exampleOverlay.addEventListener('click', (e) => {
+    if (e.target === exampleOverlay) closeExampleModal();
+  });
+
+  async function checkPracticeSentence() {
+    if (!practiceCard) return;
+    const sentence = practiceInputEl.value.trim();
+    if (!sentence) return;
+
+    const promptLangCode = practiceCard.direction.split('-')[0];
+    const promptLangName = LANG_NAMES_EN[promptLangCode] || promptLangCode;
+
+    practiceCheckBtn.disabled = true;
+    practiceCheckBtn.textContent = 'Checking…';
+    practiceFeedbackEl.style.display = 'none';
+
+    try {
+      const response = await fetch('/api/claude', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-6',
+          max_tokens: 500,
+          system: 'You are a ' + promptLangName + ' grammar tutor. The student is practicing the word or phrase "' + practiceCard.source + '" (meaning: "' + practiceCard.translation + '") by writing their own example sentence in ' + promptLangName + '. Evaluate their sentence for grammatical correctness and whether they used the target word or phrase naturally and correctly. Respond with ONLY a JSON object, no markdown fences, no preamble, in this exact shape: {"correct":true or false,"correctedSentence":"a corrected, natural version of their sentence - identical to their input if it was already correct","feedback":"1-3 sentences in English explaining any grammar mistakes or usage issues, or briefly confirming it is correct and natural if there are none"}.',
+          messages: [{ role: 'user', content: sentence }]
+        })
+      });
+
+      const data = await response.json();
+      const textBlocks = (data.content || []).filter(b => b.type === 'text' && b.text);
+      const raw = textBlocks.length ? textBlocks[textBlocks.length - 1].text.trim() : '';
+      const cleaned = raw.replace(/^```json/i, '').replace(/^```/, '').replace(/```$/, '').trim();
+      const parsed = JSON.parse(cleaned);
+
+      practiceFeedbackEl.style.display = 'block';
+      practiceFeedbackEl.className = 'quiz-feedback ' + (parsed.correct ? 'correct' : 'incorrect');
+      if (parsed.correct) {
+        practiceFeedbackEl.innerHTML = highlightForeignText(parsed.feedback || 'Correct.');
+      } else {
+        practiceFeedbackEl.innerHTML = highlightForeignText(parsed.feedback || 'Not quite.') +
+          '<br><br>Suggested: ' + highlightForeignText(parsed.correctedSentence || '');
+      }
+      practiceCheckBtn.style.display = 'none';
+      practiceTryAnotherBtn.style.display = 'inline-block';
+    } catch (err) {
+      practiceFeedbackEl.style.display = 'block';
+      practiceFeedbackEl.className = 'quiz-feedback incorrect';
+      practiceFeedbackEl.textContent = "Couldn't check that sentence. Try again.";
+      practiceCheckBtn.disabled = false;
+      practiceCheckBtn.textContent = 'Check';
+      console.error(err);
+    }
+  }
+
+  practiceCheckBtn.addEventListener('click', checkPracticeSentence);
+  practiceInputEl.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      checkPracticeSentence();
+    }
+  });
+  practiceTryAnotherBtn.addEventListener('click', () => {
+    practiceInputEl.value = '';
+    practiceFeedbackEl.style.display = 'none';
+    practiceCheckBtn.style.display = 'inline-block';
+    practiceCheckBtn.disabled = false;
+    practiceCheckBtn.textContent = 'Check';
+    practiceTryAnotherBtn.style.display = 'none';
+    practiceInputEl.focus();
+  });
+  practiceCloseBtn.addEventListener('click', closePracticeModal);
+  practiceOverlay.addEventListener('click', (e) => {
+    if (e.target === practiceOverlay) closePracticeModal();
+  });
+</script>
+</body>
+</html>
