@@ -247,6 +247,7 @@
 
   .illustration-wrap { display: block; }
   .illustration-box {
+    position: relative;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -254,6 +255,7 @@
     border: 1px solid var(--stone-light);
     border-radius: 10px;
     padding: 6px;
+    overflow: hidden;
   }
   .illustration-box svg {
     width: 100%;
@@ -261,6 +263,26 @@
     height: auto;
     display: block;
   }
+  .illustration-refresh-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(16,24,42,0.55);
+    color: var(--card);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    cursor: pointer;
+    transition: opacity 0.15s ease;
+  }
+  .illustration-box:hover .illustration-refresh-overlay { opacity: 1; }
+  .illustration-refresh-overlay svg { width: 20px; height: 20px; max-width: none; }
+  .illustration-box.regenerating .illustration-refresh-overlay {
+    opacity: 1;
+    background: rgba(16,24,42,0.55);
+  }
+  .illustration-box.regenerating .illustration-refresh-overlay svg { animation: spin 0.8s linear infinite; }
+  @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
   .illustration-photo {
     width: 64px;
     height: 64px;
@@ -1125,6 +1147,23 @@
     illustrationWrapEl.innerHTML = '';
   }
 
+  function buildIllustrationBox(contentEl) {
+    const box = document.createElement('div');
+    box.className = 'illustration-box';
+    box.appendChild(contentEl);
+
+    const overlay = document.createElement('div');
+    overlay.className = 'illustration-refresh-overlay';
+    overlay.title = 'Try another';
+    overlay.innerHTML = '<svg viewBox="0 0 24 24" fill="none"><path d="M4 12a8 8 0 0 1 13.7-5.7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M20 12a8 8 0 0 1-13.7 5.7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M17.5 3.5v4h-4M6.5 20.5v-4h4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    overlay.addEventListener('click', (e) => {
+      e.stopPropagation();
+      regenerateIllustration();
+    });
+    box.appendChild(overlay);
+    return box;
+  }
+
   function showIllustrationSvg(svgMarkup) {
     const trimmed = (svgMarkup || '').trim();
     if (!trimmed.startsWith('<svg')) {
@@ -1132,7 +1171,11 @@
       return;
     }
     illustrationWrapEl.style.display = 'block';
-    illustrationWrapEl.innerHTML = '<div class="illustration-box">' + trimmed + '</div>';
+    illustrationWrapEl.innerHTML = '';
+    const temp = document.createElement('div');
+    temp.innerHTML = trimmed;
+    const svgEl = temp.firstElementChild;
+    illustrationWrapEl.appendChild(buildIllustrationBox(svgEl));
   }
 
   function showIllustration(parsed) {
@@ -1146,9 +1189,60 @@
       img.alt = parsed.translation || '';
       img.loading = 'lazy';
       img.addEventListener('error', () => showIllustrationSvg(parsed.illustrationSvg));
-      illustrationWrapEl.appendChild(img);
+      illustrationWrapEl.appendChild(buildIllustrationBox(img));
     } else {
       showIllustrationSvg(parsed.illustrationSvg);
+    }
+  }
+
+  let regeneratingIllustration = false;
+
+  async function regenerateIllustration() {
+    if (!currentEntry || regeneratingIllustration) return;
+    const entry = currentEntry;
+    regeneratingIllustration = true;
+    const box = illustrationWrapEl.querySelector('.illustration-box');
+    if (box) box.classList.add('regenerating');
+
+    const sourceCode = entry.direction.split('-')[0];
+    const sourceLangNameLocal = LANG_NAMES_EN[sourceCode] || sourceCode;
+
+    try {
+      const response = await fetch('/api/claude', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          max_tokens: 1200,
+          tools: [{ type: 'web_search_20250305', name: 'web_search' }],
+          system: 'Find a fresh, different illustration for the ' + sourceLangNameLocal + ' word or phrase "' + entry.source + '" (meaning "' + entry.result.translation + '") - something visually different from an obvious first choice. Work out the core concept in English first. Use the web_search tool to search for something like "<english concept> wikimedia commons" using a different angle, synonym, or more specific phrasing than the most obvious search. If you find a result titled like "File:SomeName.jpg - Wikimedia Commons", build the URL as https://commons.wikimedia.org/wiki/Special:FilePath/ followed by the filename with spaces replaced by underscores. If no good photo turns up, instead design a simple SVG icon: viewBox="0 0 200 200", minimal flat glyph style, at most 3-4 shapes, only colors #1B2438 and #A6321C, no gradients, no <text> elements, no <script> tags - and make it visually different from a typical depiction of this concept. Respond with ONLY a JSON object, no markdown fences, no preamble, in this exact shape: {"imageUrl":"a direct Wikimedia file URL built as described, or empty string if none found","illustrationSvg":"a complete self-contained <svg>...</svg> string - always provide this as a fallback even when imageUrl is filled"}.',
+          messages: [{ role: 'user', content: entry.source }]
+        })
+      });
+
+      const data = await response.json();
+      if (currentEntry !== entry) return;
+
+      if (!response.ok) {
+        throw new Error(typeof data.error === 'string' ? data.error : 'Failed to fetch a new illustration');
+      }
+
+      const textBlocks = (data.content || []).filter(b => b.type === 'text' && b.text);
+      const raw = textBlocks.length ? textBlocks[textBlocks.length - 1].text.trim() : '';
+      const cleaned = raw.replace(/^```json/i, '').replace(/^```/, '').replace(/```$/, '').trim();
+      const alt = JSON.parse(cleaned);
+
+      entry.result.imageUrl = alt.imageUrl || '';
+      if (alt.illustrationSvg) entry.result.illustrationSvg = alt.illustrationSvg;
+      showIllustration(entry.result);
+
+      if (historyItems[0] && historyItems[0].result === entry.result) {
+        persistHistory();
+      }
+    } catch (err) {
+      console.error('Could not regenerate illustration', err);
+      if (box) box.classList.remove('regenerating');
+    } finally {
+      regeneratingIllustration = false;
     }
   }
 
