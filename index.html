@@ -396,19 +396,6 @@
     gap: 12px;
   }
   .flashcard-cell { display: flex; flex-direction: column; gap: 6px; }
-  .flashcard-practice-btn {
-    border: 1px dashed var(--stone-light);
-    background: transparent;
-    color: var(--stone);
-    font-size: 11.5px;
-    padding: 6px 8px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-family: "Inter", sans-serif;
-  }
-  .flashcard-practice-btn:hover { border-color: var(--seal-soft); color: var(--seal); }
-  .flashcard-btn-row { display: flex; gap: 6px; flex-wrap: wrap; }
-  .flashcard-btn-row .flashcard-practice-btn { flex: 1; }
   .flashcard { perspective: 900px; height: 200px; -webkit-perspective: 900px; }
   .flashcard-inner {
     position: relative;
@@ -431,13 +418,13 @@
     align-items: center;
     justify-content: center;
     text-align: center;
-    padding: 10px;
-    gap: 8px;
+    padding: 6px;
+    gap: 6px;
   }
   .flashcard-text { overflow-wrap: anywhere; }
   .flashcard-icon { flex-shrink: 0; }
-  .flashcard-icon svg { width: 80px; height: 80px; display: block; }
-  .flashcard-photo { width: 80px; height: 80px; object-fit: cover; border-radius: 10px; display: block; }
+  .flashcard-icon svg { width: 120px; height: 120px; display: block; }
+  .flashcard-photo { width: 120px; height: 120px; object-fit: cover; border-radius: 10px; display: block; }
   .flashcard-front {
     background: var(--card);
     border: 1.5px solid var(--ink);
@@ -474,6 +461,26 @@
     z-index: 2;
   }
   .flashcard-remove:hover { background: var(--seal); color: var(--card); }
+  .flashcard-remove svg { width: 12px; height: 12px; display: block; }
+  .flashcard-corner-btn {
+    position: absolute;
+    bottom: 6px;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(0,0,0,0.06);
+    color: var(--stone);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+  }
+  .flashcard-corner-btn svg { width: 14px; height: 14px; display: block; }
+  .flashcard-corner-btn:hover { background: var(--seal); color: var(--card); }
+  .flashcard-example-btn { left: 6px; }
+  .flashcard-practice-btn-icon { right: 6px; }
   .flashcard-tag {
     position: absolute;
     top: 6px;
@@ -580,6 +587,7 @@
     justify-content: center;
   }
   .history-remove:hover { background: var(--seal); color: var(--card); }
+  .history-remove svg { width: 13px; height: 13px; display: block; }
 
   @media (max-width: 420px) {
     .band { padding: 28px 18px 40px; }
@@ -1355,7 +1363,7 @@
       const remove = document.createElement('button');
       remove.className = 'history-remove';
       remove.setAttribute('aria-label', 'Remove from history');
-      remove.textContent = '\u00d7';
+      remove.innerHTML = '<svg viewBox="0 0 24 24" fill="none"><path d="M4 7h16" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M9 7V5c0-.6.4-1 1-1h4c.6 0 1 .4 1 1v2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 7l1 13c0 .6.4 1 1 1h8c.6 0 1-.4 1-1l1-13" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M10 11v6M14 11v6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>';
       remove.addEventListener('click', (e) => {
         e.stopPropagation();
         deleteHistoryItem(idx);
@@ -1659,10 +1667,30 @@
       const remove = document.createElement('button');
       remove.className = 'flashcard-remove';
       remove.setAttribute('aria-label', 'Remove card');
-      remove.textContent = '\u00d7';
+      remove.innerHTML = '<svg viewBox="0 0 24 24" fill="none"><path d="M4 7h16" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M9 7V5c0-.6.4-1 1-1h4c.6 0 1 .4 1 1v2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 7l1 13c0 .6.4 1 1 1h8c.6 0 1-.4 1-1l1-13" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M10 11v6M14 11v6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>';
       remove.addEventListener('click', (e) => {
         e.stopPropagation();
         deleteFlashcard(card.id);
+      });
+
+      const exampleIconBtn = document.createElement('button');
+      exampleIconBtn.className = 'flashcard-corner-btn flashcard-example-btn';
+      exampleIconBtn.setAttribute('aria-label', 'See an example sentence');
+      exampleIconBtn.title = 'Example';
+      exampleIconBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none"><path d="M4 5.5h16M4 10.5h16M4 15.5h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>';
+      exampleIconBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        openExampleModal(card);
+      });
+
+      const practiceIconBtn = document.createElement('button');
+      practiceIconBtn.className = 'flashcard-corner-btn flashcard-practice-btn-icon';
+      practiceIconBtn.setAttribute('aria-label', 'Practice a sentence with this word');
+      practiceIconBtn.title = 'Practice sentence';
+      practiceIconBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none"><path d="M14 2l5 5-8.5 8.5H7v-3.5L14 2z" fill="currentColor"/><line x1="11" y1="18" x2="20" y2="18" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/><line x1="4.2" y1="21" x2="17" y2="21" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/><circle cx="1.6" cy="21" r="1.1" fill="currentColor"/></svg>';
+      practiceIconBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        openPracticeModal(card);
       });
 
       inner.appendChild(front);
@@ -1670,27 +1698,12 @@
       outer.appendChild(inner);
       outer.appendChild(tag);
       outer.appendChild(remove);
+      outer.appendChild(exampleIconBtn);
+      outer.appendChild(practiceIconBtn);
 
       const cell = document.createElement('div');
       cell.className = 'flashcard-cell';
-
-      const btnRow = document.createElement('div');
-      btnRow.className = 'flashcard-btn-row';
-
-      const exampleBtn = document.createElement('button');
-      exampleBtn.className = 'flashcard-practice-btn';
-      exampleBtn.textContent = 'Example';
-      exampleBtn.addEventListener('click', () => openExampleModal(card));
-
-      const practiceBtn = document.createElement('button');
-      practiceBtn.className = 'flashcard-practice-btn';
-      practiceBtn.textContent = 'Practice sentence';
-      practiceBtn.addEventListener('click', () => openPracticeModal(card));
-
-      btnRow.appendChild(exampleBtn);
-      btnRow.appendChild(practiceBtn);
       cell.appendChild(outer);
-      cell.appendChild(btnRow);
       grid.appendChild(cell);
     });
     flashcardsGridEl.innerHTML = '';
