@@ -1,4 +1,4 @@
-// Proxies requests to Google's Gemini API (gemini-3.5-flash-lite), keeping
+// Proxies requests to Google's Gemini API (gemini-2.5-flash-lite), keeping
 // GEMINI_API_KEY on the server. Despite the filename, this no longer calls
 // Claude - kept as /api/claude so the frontend didn't need to change.
 //
@@ -10,7 +10,7 @@
 // Free-tier Gemini has a fairly low requests-per-minute limit, so this
 // retries automatically (with backoff) on 429s before giving up.
 
-const MODEL = 'gemini-3.5-flash-lite';
+const MODEL = 'gemini-2.5-flash-lite';
 const MAX_RETRIES = 2;
 
 function sleep(ms) {
