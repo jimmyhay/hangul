@@ -1,5 +1,13 @@
-// Proxies chat requests to Claude, keeping ANTHROPIC_API_KEY on the server.
-// The frontend sends { system, messages, max_tokens, tools } and gets Claude's raw response back.
+// Proxies requests to Google's Gemini API (gemini-3.5-flash-lite), keeping
+// GEMINI_API_KEY on the server. Despite the filename, this no longer calls
+// Claude - kept as /api/claude so the frontend didn't need to change.
+//
+// The frontend sends the same shape it always has: { system, messages, max_tokens, tools }.
+// This function translates that into Gemini's actual request format, and
+// shapes Gemini's response to look like Claude's ({ content: [{ type: 'text', text }] })
+// so none of the frontend's response-parsing code needed to change either.
+
+const MODEL = 'gemini-3.5-flash-lite';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -7,33 +15,50 @@ export default async function handler(req, res) {
   }
 
   const { system, messages, max_tokens, tools } = req.body || {};
-  if (!messages) {
+  const userText = messages && messages[0] && messages[0].content;
+  if (!userText) {
     return res.status(400).json({ error: 'Missing messages' });
   }
 
-  try {
-    const body = {
-      model: 'claude-sonnet-5',
-      max_tokens: max_tokens || 1500,
-      system,
-      messages
-    };
-    if (tools) body.tools = tools;
+  const geminiBody = {
+    contents: [{ role: 'user', parts: [{ text: userText }] }],
+    generationConfig: { maxOutputTokens: max_tokens || 1500 }
+  };
+  if (system) {
+    geminiBody.systemInstruction = { parts: [{ text: system }] };
+  }
+  if (tools && tools.length) {
+    // The frontend asks for Claude-style web_search; map that intent onto
+    // Gemini's own grounding tool.
+    geminiBody.tools = [{ google_search: {} }];
+  }
 
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`;
+
+  try {
+    const response = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-api-key': process.env.ANTHROPIC_API_KEY,
-        'anthropic-version': '2023-06-01'
+        'x-goog-api-key': process.env.GEMINI_API_KEY
       },
-      body: JSON.stringify(body)
+      body: JSON.stringify(geminiBody)
     });
 
     const data = await response.json();
-    res.status(response.status).json(data);
+
+    if (!response.ok) {
+      console.error('Gemini error:', JSON.stringify(data));
+      return res.status(response.status).json({ error: data.error || data });
+    }
+
+    const candidate = data.candidates && data.candidates[0];
+    const parts = (candidate && candidate.content && candidate.content.parts) || [];
+    const text = parts.map((p) => p.text || '').join('');
+
+    res.status(200).json({ content: [{ type: 'text', text }] });
   } catch (err) {
-    console.error('Claude proxy error:', err);
-    res.status(500).json({ error: 'Failed to reach Claude' });
+    console.error('Gemini proxy error:', err);
+    res.status(500).json({ error: 'Failed to reach Gemini' });
   }
 }
