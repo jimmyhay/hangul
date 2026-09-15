@@ -1177,6 +1177,10 @@
       const data = await response.json();
       if (myId !== requestId) return;
 
+      if (!response.ok) {
+        throw new Error(typeof data.error === 'string' ? data.error : "Couldn't translate that. Try again.");
+      }
+
       const textBlocks = (data.content || []).filter(b => b.type === 'text' && b.text);
       const raw = textBlocks.length ? textBlocks[textBlocks.length - 1].text.trim() : '';
       const cleaned = raw.replace(/^```json/i, '').replace(/^```/, '').replace(/```$/, '').trim();
@@ -1191,7 +1195,7 @@
       if (myId !== requestId) return;
       resultEl.classList.remove('loading');
       resultEl.classList.add('empty');
-      resultEl.textContent = "Couldn't translate that. Try again.";
+      resultEl.textContent = err && err.message ? err.message : "Couldn't translate that. Try again.";
       translateBtn.disabled = !input.value.trim();
       console.error(err);
     }
