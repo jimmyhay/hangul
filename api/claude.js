@@ -1,4 +1,4 @@
-// Proxies requests to Google's Gemini API (gemini-2.5-flash-lite), keeping
+// Proxies requests to Google's Gemini API (gemini-3.5-flash-lite), keeping
 // GEMINI_API_KEY on the server. Despite the filename, this no longer calls
 // Claude - kept as /api/claude so the frontend didn't need to change.
 //
@@ -10,7 +10,7 @@
 // Free-tier Gemini has a fairly low requests-per-minute limit, so this
 // retries automatically (with backoff) on 429s before giving up.
 
-const MODEL = 'gemini-2.5-flash-lite';
+const MODEL = 'gemini-3.5-flash-lite';
 const MAX_RETRIES = 2;
 
 function sleep(ms) {
@@ -74,12 +74,23 @@ export default async function handler(req, res) {
           error: 'Rate limit reached on the free tier. Wait a moment and try again, or check your usage at aistudio.google.com/rate-limit.'
         });
       }
-      return res.status(response.status).json({ error: data.error || data });
+      // Gemini's error field is an object ({code, message, status}), not a
+      // plain string - extract the actual message so it isn't silently lost.
+      const message = (data.error && data.error.message) || JSON.stringify(data.error || data);
+      return res.status(response.status).json({ error: message });
     }
 
     const candidate = data.candidates && data.candidates[0];
     const parts = (candidate && candidate.content && candidate.content.parts) || [];
     const text = parts.map((p) => p.text || '').join('');
+
+    if (!text.trim()) {
+      const reason = (candidate && candidate.finishReason)
+        || (data.promptFeedback && data.promptFeedback.blockReason)
+        || 'unknown';
+      console.error('Gemini returned empty text. Reason:', reason, JSON.stringify(data));
+      return res.status(502).json({ error: 'Gemini returned no usable response (reason: ' + reason + '). Try again.' });
+    }
 
     res.status(200).json({ content: [{ type: 'text', text }] });
   } catch (err) {
