@@ -356,10 +356,16 @@
   .related-list { display: flex; flex-wrap: wrap; gap: 8px; }
   .related-item {
     background: var(--seal-tint);
+    border: none;
     border-radius: 100px;
     padding: 6px 13px 6px 13px;
     font-size: 13.5px;
+    font-family: "Inter", sans-serif;
+    cursor: pointer;
+    transition: background 0.12s ease;
   }
+  .related-item:hover { background: var(--seal); }
+  .related-item:hover .word, .related-item:hover .gloss { color: var(--card); }
   .related-item .word { font-family: "Noto Sans KR", "Noto Sans JP", sans-serif; font-weight: 500; color: var(--seal); }
   .related-item .gloss { color: var(--ink-soft); font-size: 12px; margin-left: 5px; }
 
@@ -1108,7 +1114,17 @@
   loadFlashcards();
   resultWrap.classList.add('visible');
 
-  input.addEventListener('focus', () => inputWrap.classList.add('focused'));
+  input.addEventListener('focus', () => {
+    inputWrap.classList.add('focused');
+    if (input.value) {
+      setTimeout(() => input.select(), 0);
+    }
+  });
+  input.addEventListener('click', () => {
+    if (input.value) {
+      setTimeout(() => input.select(), 0);
+    }
+  });
   input.addEventListener('blur', () => {
     inputWrap.classList.remove('focused');
   });
@@ -1524,7 +1540,8 @@
     if (Array.isArray(parsed.related) && parsed.related.length) {
       relatedListEl.innerHTML = '';
       parsed.related.forEach(r => {
-        const chip = document.createElement('div');
+        const chip = document.createElement('button');
+        chip.type = 'button';
         chip.className = 'related-item';
         const word = document.createElement('span');
         word.className = 'word';
@@ -1534,6 +1551,12 @@
         gloss.textContent = r.gloss;
         chip.appendChild(word);
         chip.appendChild(gloss);
+        chip.addEventListener('click', () => {
+          input.value = r.word;
+          autoResize();
+          translateBtn.disabled = false;
+          translate(r.word);
+        });
         relatedListEl.appendChild(chip);
       });
       relatedSection.style.display = 'block';
