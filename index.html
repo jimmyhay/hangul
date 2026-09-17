@@ -87,19 +87,24 @@
     font-size: 12.5px;
     color: rgba(245,241,230,0.55);
   }
-  .lang-btn {
+  .lang-select {
     border: 1px solid rgba(245,241,230,0.25);
     background: rgba(245,241,230,0.06);
     color: var(--card);
     font-size: 13px;
-    padding: 8px 14px;
+    padding: 8px 30px 8px 14px;
     border-radius: 100px;
     cursor: pointer;
     white-space: nowrap;
     font-family: "Inter", sans-serif;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M2.5 4.5L6 8L9.5 4.5' fill='none' stroke='%23F5F1E6' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
   }
-  .lang-btn:hover { border-color: var(--seal-soft); color: var(--seal-soft); }
-  .lang-btn:active { transform: scale(0.97); }
+  .lang-select:hover { border-color: var(--seal-soft); }
+  .lang-select option { background: var(--ink-deep); color: var(--card); }
   .auth-row {
     display: flex;
     align-items: center;
@@ -846,7 +851,11 @@
           <p>Korean, in detail</p>
         </div>
       </div>
-      <button class="lang-btn" id="langBtn">Korean ⇄ English</button>
+      <select class="lang-select" id="langSelect" aria-label="Language pair">
+        <option value="ko-en">Korean ⇄ English</option>
+        <option value="ko-ja">Korean ⇄ Japanese</option>
+        <option value="pl-en">Polish ⇄ English</option>
+      </select>
     </div>
     <div class="auth-row">
       <span class="auth-status" id="authStatus">Not signed in</span>
@@ -1038,8 +1047,8 @@
   // Fill these in with your project's values from Supabase: Settings > Data API
   // (Project URL) and Settings > API Keys (the "anon" / "publishable" key -
   // NOT the service_role key, which must never appear in frontend code).
-  const SUPABASE_URL = 'https://wddplglfsjjwppvisuqs.supabase.co';
-  const SUPABASE_ANON_KEY = 'sb_publishable_sn2RLEVf74HS6TvyjSEmUA_SzaPKgqm';
+  const SUPABASE_URL = 'YOUR_SUPABASE_URL';
+  const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
 
   const supabaseClient = (window.supabase && SUPABASE_URL.indexOf('http') === 0)
     ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
@@ -1125,7 +1134,7 @@
   const input = document.getElementById('input');
   const inputWrap = document.getElementById('inputWrap');
   const translateBtn = document.getElementById('translateBtn');
-  const langBtn = document.getElementById('langBtn');
+  const langSelect = document.getElementById('langSelect');
   const resultWrap = document.getElementById('resultWrap');
   const detectedDirectionEl = document.getElementById('detectedDirection');
   const metaEl = document.getElementById('meta');
@@ -1199,10 +1208,27 @@
   const HISTORY_KEY = 'history';
   const MAX_HISTORY = 50;
   const FLASHCARDS_KEY = 'flashcards';
-  const LANG_NAMES = { ko: '한국어', en: 'English', ja: '日本語' };
-  const LANG_NAMES_EN = { ko: 'Korean', en: 'English', ja: 'Japanese' };
+  const LANG_NAMES = { ko: '한국어', en: 'English', ja: '日本語', pl: 'polski' };
+  const LANG_NAMES_EN = { ko: 'Korean', en: 'English', ja: 'Japanese', pl: 'Polish' };
+  const LANGUAGE_PAIRS = [
+    { id: 'ko-en', a: 'ko', b: 'en', label: 'Korean ⇄ English' },
+    { id: 'ko-ja', a: 'ko', b: 'ja', label: 'Korean ⇄ Japanese' },
+    { id: 'pl-en', a: 'pl', b: 'en', label: 'Polish ⇄ English' }
+  ];
 
-  let otherLang = 'en';
+  function getCurrentPair() {
+    return LANGUAGE_PAIRS.find(p => p.id === currentPairId) || LANGUAGE_PAIRS[0];
+  }
+
+  function getPairFromDirection(direction) {
+    if (!direction) return null;
+    const parts = direction.split('-');
+    return LANGUAGE_PAIRS.find(p =>
+      (p.a === parts[0] && p.b === parts[1]) || (p.a === parts[1] && p.b === parts[0])
+    ) || null;
+  }
+
+  let currentPairId = 'ko-en';
   let requestId = 0;
   let historyItems = [];
   let flashcards = [];
@@ -1403,8 +1429,8 @@
     inputWrap.classList.remove('focused');
   });
 
-  langBtn.addEventListener('click', () => {
-    otherLang = otherLang === 'en' ? 'ja' : 'en';
+  langSelect.addEventListener('change', () => {
+    currentPairId = langSelect.value;
     applyLangPair();
     requestId++;
     input.value = '';
@@ -1414,10 +1440,9 @@
   });
 
   function applyLangPair() {
-    langBtn.textContent = 'Korean ⇄ ' + LANG_NAMES_EN[otherLang];
-    input.placeholder = otherLang === 'ja'
-      ? 'Type in 한국어 or 日本語'
-      : 'Type in English or 한국어';
+    langSelect.value = currentPairId;
+    const pair = getCurrentPair();
+    input.placeholder = 'Type in ' + LANG_NAMES[pair.a] + ' or ' + LANG_NAMES[pair.b];
   }
   applyLangPair();
 
@@ -1688,7 +1713,16 @@
     statusEl.textContent = '';
     translateBtn.disabled = true;
 
-    const otherLangName = LANG_NAMES_EN[otherLang];
+    const pair = getCurrentPair();
+    const langAName = LANG_NAMES_EN[pair.a];
+    const langBName = LANG_NAMES_EN[pair.b];
+    const hasNonLatin = pair.a === 'ko' || pair.a === 'ja' || pair.b === 'ko' || pair.b === 'ja';
+    const romanizationInstruction = hasNonLatin
+      ? 'Revised Romanization (if Korean) or Hepburn romaji (if Japanese) of whichever side is not already in Latin script - the input itself if it is in that script, or your translation if the translation is. Empty string if neither side of this particular word/phrase needs romanization.'
+      : 'Always an empty string - neither language in this pair needs romanization.';
+    const conjugationNote = (pair.a === 'ko' || pair.b === 'ko')
+      ? ' If the input is a conjugated, inflected, or purpose-form verb (e.g. a Korean -러 or -하려고 form, or any tense marking), do not describe the grammar - describe the underlying concrete action or scene instead (e.g. 태우러 from 태우다 could mean to burn something or to give someone a ride depending on context - pick the correct sense from this translation and describe that action, like burning campfire or person driving giving a ride).'
+      : ' If the input is a conjugated or inflected verb form, describe the underlying concrete action or scene, not the grammar.';
 
     try {
       const response = await fetch('/api/claude', {
@@ -1696,7 +1730,7 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           max_tokens: 1500,
-          system: 'You are a bilingual Korean-' + otherLangName + ' dictionary and translation tutor. Given a word, phrase, or sentence, first detect whether it is written in Korean or ' + otherLangName + ', then translate it into the other of those two languages the way a knowledgeable, thorough tutor would when asked to translate something in detail. Respond with ONLY a JSON object, no markdown fences, no preamble, in this exact shape: {"detected":"ko" or "' + otherLang + '" (the language of the INPUT text, must be one of these two codes),"romanization":"Revised Romanization of whichever side is Korean - the input itself if it is Korean, or your Korean translation if the input was ' + otherLangName + '","partOfSpeech":"e.g. noun, verb, adjective, expression, idiom","translation":"the main natural translation, in the language that is NOT the input language","imageQuery":"a short 2-5 word ENGLISH search phrase for a stock-photo search, describing the precise, specific meaning of this word or phrase (not a broad category - if it has multiple senses, describe the one matching this translation). If the input is a conjugated, inflected, or purpose-form verb (e.g. a Korean -러 or -하려고 form, or any tense marking), do not describe the grammar - describe the underlying concrete action or scene instead (e.g. 태우러 from 태우다 could mean to burn something or to give someone a ride depending on context - pick the correct sense from this translation and describe that action, like burning campfire or person driving giving a ride). Use empty string only for things with no plausible photo, like grammar particles.","illustrationSvg":"a single simple SVG illustration of the core concept behind this word or phrase, as one complete self-contained string starting with <svg and ending with </svg>. Use viewBox=\"0 0 200 200\". Keep it minimal and iconographic - a flat, simple glyph-style icon with at most 3-4 shapes or paths, not a detailed scene. Only use these two colors for fill or stroke: #1B2438 and #A6321C. No gradients, no other colors, no <text> elements, no external image references, no <script> tags. Pick the closest concrete, drawable concept even for abstract words (e.g. for gratitude, draw a simple gift box or a heart). Always provide a valid complete SVG, never leave this field empty - this is used as a fallback whenever no good photo is found.","nuance":"1-3 sentences on register (formal/informal/honorific), connotation, and when a native speaker would actually use this versus alternatives","examples":[{"ko":"a natural Korean sentence using the word or phrase","other":"its natural ' + otherLangName + ' translation"},{"ko":"...","other":"..."},{"ko":"...","other":"..."}],"related":[{"word":"a related word or expression in the SAME language as the input","gloss":"a short gloss in the other language"}]}. Give 2-3 examples that show natural everyday use. Give 2-4 related items (synonyms, antonyms, or commonly confused words). If the input is a full sentence rather than a word/phrase, still fill every field as best fits (e.g. partOfSpeech can be "sentence"). Only ever detect Korean or ' + otherLangName + ' - if the input looks like a third language, do your best guess between those two.',
+          system: 'You are a bilingual ' + langAName + '-' + langBName + ' dictionary and translation tutor. Given a word, phrase, or sentence, first detect whether it is written in ' + langAName + ' or ' + langBName + ', then translate it into the other of those two languages the way a knowledgeable, thorough tutor would when asked to translate something in detail. Respond with ONLY a JSON object, no markdown fences, no preamble, in this exact shape: {"detected":"' + pair.a + '" or "' + pair.b + '" (the language of the INPUT text, must be one of these two codes),"romanization":"' + romanizationInstruction + '","partOfSpeech":"e.g. noun, verb, adjective, expression, idiom","translation":"the main natural translation, in the language that is NOT the input language","imageQuery":"a short 2-5 word ENGLISH search phrase for a stock-photo search, describing the precise, specific meaning of this word or phrase (not a broad category - if it has multiple senses, describe the one matching this translation).' + conjugationNote + ' Use empty string only for things with no plausible photo, like grammar particles.","illustrationSvg":"a single simple SVG illustration of the core concept behind this word or phrase, as one complete self-contained string starting with <svg and ending with </svg>. Use viewBox=\"0 0 200 200\". Keep it minimal and iconographic - a flat, simple glyph-style icon with at most 3-4 shapes or paths, not a detailed scene. Only use these two colors for fill or stroke: #1B2438 and #A6321C. No gradients, no other colors, no <text> elements, no external image references, no <script> tags. Pick the closest concrete, drawable concept even for abstract words (e.g. for gratitude, draw a simple gift box or a heart). Always provide a valid complete SVG, never leave this field empty - this is used as a fallback whenever no good photo is found.","nuance":"1-3 sentences on register (formal/informal/honorific), connotation, and when a native speaker would actually use this versus alternatives","examples":[{"ko":"a natural sentence in ' + langAName + ' using the word or phrase","other":"its natural ' + langBName + ' translation"},{"ko":"...","other":"..."},{"ko":"...","other":"..."}],"related":[{"word":"a related word or expression in the SAME language as the input","gloss":"a short gloss in the other language"}]}. Give 2-3 examples that show natural everyday use. Give 2-4 related items (synonyms, antonyms, or commonly confused words). If the input is a full sentence rather than a word/phrase, still fill every field as best fits (e.g. partOfSpeech can be "sentence"). Only ever detect ' + langAName + ' or ' + langBName + ' - if the input looks like a third language, do your best guess between those two.',
           messages: [{ role: 'user', content: text }]
         })
       });
@@ -1712,7 +1746,7 @@
       const raw = textBlocks.length ? textBlocks[textBlocks.length - 1].text.trim() : '';
       const cleaned = raw.replace(/^```json/i, '').replace(/^```/, '').replace(/```$/, '').trim();
       const parsed = JSON.parse(cleaned);
-      const detectedDirection = parsed.detected === otherLang ? (otherLang + '-ko') : ('ko-' + otherLang);
+      const detectedDirection = parsed.detected === pair.a ? (pair.a + '-' + pair.b) : (pair.b + '-' + pair.a);
 
       renderResult(parsed, detectedDirection);
       currentEntry = { source: text, direction: detectedDirection, result: parsed };
@@ -1791,8 +1825,8 @@
 
     if (Array.isArray(parsed.examples) && parsed.examples.length) {
       examplesListEl.innerHTML = '';
-      const glossOtherCode = entryDirection ? (entryDirection.split('-').find(p => p !== 'ko') || 'en') : 'en';
-      const glossLangName = LANG_NAMES_EN[glossOtherCode] || 'English';
+      const glossPair = getPairFromDirection(entryDirection) || getCurrentPair();
+      const glossLangName = LANG_NAMES_EN[glossPair.b] || 'English';
       parsed.examples.forEach(ex => {
         const div = document.createElement('div');
         div.className = 'example';
@@ -1924,10 +1958,9 @@
     const item = historyItems[idx];
     if (!item) return;
     requestId++;
-    const parts = item.direction.split('-');
-    const itemOtherLang = parts.find(p => p !== 'ko');
-    if (itemOtherLang && itemOtherLang !== otherLang) {
-      otherLang = itemOtherLang;
+    const itemPair = getPairFromDirection(item.direction);
+    if (itemPair && itemPair.id !== currentPairId) {
+      currentPairId = itemPair.id;
       applyLangPair();
     }
     input.value = item.source;
@@ -2444,8 +2477,8 @@
 
     const ko = document.createElement('div');
     ko.className = 'ko';
-    const cardOtherCode = card && card.direction ? (card.direction.split('-').find(p => p !== 'ko') || 'en') : 'en';
-    const cardGlossLangName = LANG_NAMES_EN[cardOtherCode] || 'English';
+    const cardPair = (card && card.direction) ? (getPairFromDirection(card.direction) || getCurrentPair()) : getCurrentPair();
+    const cardGlossLangName = LANG_NAMES_EN[cardPair.b] || 'English';
     ko.appendChild(makeClickableText(example.ko, example.ko, cardGlossLangName));
 
     const toggleBtn = document.createElement('button');
@@ -2492,7 +2525,8 @@
 
   async function fetchCardExample(card) {
     const sourceCode = card.direction.split('-')[0];
-    const otherCode = card.direction.split('-').find(p => p !== 'ko') || 'en';
+    const cardPair = getPairFromDirection(card.direction) || getCurrentPair();
+    const otherCode = sourceCode === cardPair.a ? cardPair.b : cardPair.a;
     const sourceLangName = LANG_NAMES_EN[sourceCode] || sourceCode;
     const otherLangName = LANG_NAMES_EN[otherCode] || otherCode;
 
