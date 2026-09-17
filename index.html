@@ -1038,8 +1038,8 @@
   // Fill these in with your project's values from Supabase: Settings > Data API
   // (Project URL) and Settings > API Keys (the "anon" / "publishable" key -
   // NOT the service_role key, which must never appear in frontend code).
-  const SUPABASE_URL = 'https://wddplglfsjjwppvisuqs.supabase.co/rest/v1/';
-  const SUPABASE_ANON_KEY = 'sb_publishable_sn2RLEVf74HS6TvyjSEmUA_SzaPKgqm';
+  const SUPABASE_URL = 'YOUR_SUPABASE_URL';
+  const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
 
   const supabaseClient = (window.supabase && SUPABASE_URL.indexOf('http') === 0)
     ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
@@ -1372,9 +1372,13 @@
       loadFlashcards();
       return;
     }
+    let lastUserId = undefined;
     supabaseClient.auth.onAuthStateChange((event, session) => {
+      const newUserId = session ? session.user.id : null;
       currentUser = session ? session.user : null;
       updateAuthUI();
+      if (newUserId === lastUserId) return;
+      lastUserId = newUserId;
       loadHistory();
       loadFlashcards();
       if (currentUser) offerLegacyImport();
@@ -1837,13 +1841,19 @@
     requestAnimationFrame(() => resultWrap.classList.add('visible'));
   }
 
+  let historyLoadSeq = 0;
+
   async function loadHistory() {
+    const seq = ++historyLoadSeq;
     try {
       const res = await appStorageGet(HISTORY_KEY);
+      if (seq !== historyLoadSeq) return;
       historyItems = res && res.value ? JSON.parse(res.value) : [];
     } catch (e) {
+      if (seq !== historyLoadSeq) return;
       historyItems = [];
     }
+    if (seq !== historyLoadSeq) return;
     renderHistory();
   }
 
@@ -2018,13 +2028,19 @@
     saveBtn.classList.toggle('saved', saved);
   }
 
+  let flashcardsLoadSeq = 0;
+
   async function loadFlashcards() {
+    const seq = ++flashcardsLoadSeq;
     try {
       const res = await appStorageGet(FLASHCARDS_KEY);
+      if (seq !== flashcardsLoadSeq) return;
       flashcards = res && res.value ? JSON.parse(res.value) : [];
     } catch (e) {
+      if (seq !== flashcardsLoadSeq) return;
       flashcards = [];
     }
+    if (seq !== flashcardsLoadSeq) return;
     renderFlashcards();
   }
 
