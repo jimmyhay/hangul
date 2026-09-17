@@ -100,6 +100,30 @@
   }
   .lang-btn:hover { border-color: var(--seal-soft); color: var(--seal-soft); }
   .lang-btn:active { transform: scale(0.97); }
+  .auth-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 10px;
+    position: relative;
+    z-index: 1;
+  }
+  .auth-status {
+    font-size: 12px;
+    color: rgba(245,241,230,0.55);
+    font-family: "Inter", sans-serif;
+  }
+  .auth-btn {
+    border: 1px solid rgba(245,241,230,0.25);
+    background: transparent;
+    color: rgba(245,241,230,0.85);
+    font-size: 12px;
+    padding: 5px 12px;
+    border-radius: 100px;
+    cursor: pointer;
+    font-family: "Inter", sans-serif;
+  }
+  .auth-btn:hover { border-color: var(--seal-soft); color: var(--seal-soft); }
 
   .card {
     background: var(--card);
@@ -809,6 +833,7 @@
     margin: 0 0 4px;
   }
 </style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 <div class="app">
@@ -822,6 +847,10 @@
         </div>
       </div>
       <button class="lang-btn" id="langBtn">Korean ⇄ English</button>
+    </div>
+    <div class="auth-row">
+      <span class="auth-status" id="authStatus">Not signed in</span>
+      <button class="auth-btn" id="authBtn">Sign in</button>
     </div>
   </div>
 
@@ -981,50 +1010,110 @@
   </div>
 </div>
 
+<div class="modal-overlay" id="authOverlay">
+  <div class="modal-box">
+    <div class="quiz-head">
+      <p class="modal-title" id="authTitle" style="margin:0;">Sign in</p>
+      <button class="quiz-close" id="authCloseBtn" aria-label="Close">&times;</button>
+    </div>
+    <p class="modal-subtitle" id="authSubtitle">Sign in to save your flashcards to your own account.</p>
+
+    <input type="email" class="modal-input" id="authEmail" placeholder="Email" autocomplete="email" style="margin-top:12px;">
+    <input type="password" class="modal-input" id="authPassword" placeholder="Password" autocomplete="current-password" style="margin-top:10px;">
+
+    <div class="quiz-feedback" id="authFeedback" style="display:none;"></div>
+
+    <div class="modal-actions">
+      <button class="modal-btn secondary" id="authToggleModeBtn">Need an account? Sign up</button>
+      <button class="modal-btn primary" id="authSubmitBtn">Sign in</button>
+    </div>
+  </div>
+</div>
+
 <script>
-  // --- Storage helpers: replace window.storage (claude.ai only) with a
-  // small Supabase-backed API route, protected by a one-time passphrase. ---
-  function getAppSecret() {
-    let secret = localStorage.getItem('app_secret');
-    if (!secret) {
-      secret = window.prompt('Enter your app passphrase (must match APP_SECRET in Vercel):') || '';
-      if (secret) localStorage.setItem('app_secret', secret);
+  // --- Supabase Auth setup ---
+  // Fill these in with your project's values from Supabase: Settings > Data API
+  // (Project URL) and Settings > API Keys (the "anon" / "publishable" key -
+  // NOT the service_role key, which must never appear in frontend code).
+  const SUPABASE_URL = 'YOUR_SUPABASE_URL';
+  const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
+
+  const supabaseClient = (window.supabase && SUPABASE_URL.indexOf('http') === 0)
+    ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+    : null;
+
+  let currentUser = null;
+
+  // --- Storage helpers ---
+  // Logged in: read/write the per-user `user_data` table directly via
+  // Supabase (protected by Row Level Security, so this is safe to do from
+  // the browser with the public anon key). Logged out (guest): fall back to
+  // this browser's own localStorage, so the app still works without an account.
+
+  function guestStorageGet(key) {
+    try {
+      const raw = localStorage.getItem('guest_' + key);
+      return { value: raw };
+    } catch (e) {
+      return { value: null };
     }
-    return secret;
+  }
+
+  function guestStorageSet(key, jsonString) {
+    try {
+      localStorage.setItem('guest_' + key, jsonString);
+    } catch (e) {
+      console.error('Guest storage set failed', e);
+    }
+  }
+
+  function guestStorageDelete(key) {
+    try {
+      localStorage.removeItem('guest_' + key);
+    } catch (e) {}
   }
 
   async function appStorageGet(key) {
+    if (!currentUser || !supabaseClient) return guestStorageGet(key);
     try {
-      const res = await fetch('/api/storage?key=' + encodeURIComponent(key), {
-        headers: { 'x-app-secret': getAppSecret() }
-      });
-      if (!res.ok) return null;
-      const data = await res.json();
-      return { value: data.value != null ? JSON.stringify(data.value) : null };
+      const { data, error } = await supabaseClient
+        .from('user_data')
+        .select('value')
+        .eq('user_id', currentUser.id)
+        .eq('key', key)
+        .maybeSingle();
+      if (error) throw error;
+      return { value: data && data.value != null ? JSON.stringify(data.value) : null };
     } catch (e) {
       console.error('Storage get failed', e);
-      return null;
+      return { value: null };
     }
   }
 
   async function appStorageSet(key, jsonString) {
+    if (!currentUser || !supabaseClient) return guestStorageSet(key, jsonString);
     try {
-      await fetch('/api/storage?key=' + encodeURIComponent(key), {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-app-secret': getAppSecret() },
-        body: JSON.stringify({ value: JSON.parse(jsonString) })
-      });
+      const { error } = await supabaseClient
+        .from('user_data')
+        .upsert(
+          { user_id: currentUser.id, key, value: JSON.parse(jsonString), updated_at: new Date().toISOString() },
+          { onConflict: 'user_id,key' }
+        );
+      if (error) throw error;
     } catch (e) {
       console.error('Storage set failed', e);
     }
   }
 
   async function appStorageDelete(key) {
+    if (!currentUser || !supabaseClient) return guestStorageDelete(key);
     try {
-      await fetch('/api/storage?key=' + encodeURIComponent(key), {
-        method: 'DELETE',
-        headers: { 'x-app-secret': getAppSecret() }
-      });
+      const { error } = await supabaseClient
+        .from('user_data')
+        .delete()
+        .eq('user_id', currentUser.id)
+        .eq('key', key);
+      if (error) throw error;
     } catch (e) {
       console.error('Storage delete failed', e);
     }
@@ -1085,6 +1174,17 @@
   const exampleCloseBtn = document.getElementById('exampleCloseBtn');
   const exampleCloseBtn2 = document.getElementById('exampleCloseBtn2');
   const exampleAnotherBtn = document.getElementById('exampleAnotherBtn');
+  const authStatusEl = document.getElementById('authStatus');
+  const authBtn = document.getElementById('authBtn');
+  const authOverlay = document.getElementById('authOverlay');
+  const authTitleEl = document.getElementById('authTitle');
+  const authSubtitleEl = document.getElementById('authSubtitle');
+  const authEmailEl = document.getElementById('authEmail');
+  const authPasswordEl = document.getElementById('authPassword');
+  const authFeedbackEl = document.getElementById('authFeedback');
+  const authToggleModeBtn = document.getElementById('authToggleModeBtn');
+  const authSubmitBtn = document.getElementById('authSubmitBtn');
+  const authCloseBtn = document.getElementById('authCloseBtn');
   const setModalOverlay = document.getElementById('setModalOverlay');
   const setModalTitle = document.getElementById('setModalTitle');
   const setModalInput = document.getElementById('setModalInput');
@@ -1109,9 +1209,159 @@
   let quizIndex = 0;
   let quizScore = 0;
   let quizAnswered = false;
+  let authMode = 'signin';
 
-  loadHistory();
-  loadFlashcards();
+  function updateAuthUI() {
+    if (currentUser) {
+      authStatusEl.textContent = currentUser.email;
+      authBtn.textContent = 'Sign out';
+    } else {
+      authStatusEl.textContent = 'Not signed in';
+      authBtn.textContent = 'Sign in';
+    }
+  }
+
+  function applyAuthMode() {
+    if (authMode === 'signin') {
+      authTitleEl.textContent = 'Sign in';
+      authSubtitleEl.textContent = 'Sign in to save your flashcards to your own account.';
+      authSubmitBtn.textContent = 'Sign in';
+      authToggleModeBtn.textContent = 'Need an account? Sign up';
+    } else {
+      authTitleEl.textContent = 'Sign up';
+      authSubtitleEl.textContent = 'Create an account to keep your flashcards synced across devices.';
+      authSubmitBtn.textContent = 'Sign up';
+      authToggleModeBtn.textContent = 'Already have an account? Sign in';
+    }
+  }
+
+  function openAuthModal() {
+    authMode = 'signin';
+    applyAuthMode();
+    authEmailEl.value = '';
+    authPasswordEl.value = '';
+    authFeedbackEl.style.display = 'none';
+    authOverlay.classList.add('open');
+    setTimeout(() => authEmailEl.focus(), 0);
+  }
+
+  function closeAuthModal() {
+    authOverlay.classList.remove('open');
+  }
+
+  authBtn.addEventListener('click', () => {
+    if (!supabaseClient) {
+      alert('Accounts are not set up yet - add SUPABASE_URL and SUPABASE_ANON_KEY near the top of the script.');
+      return;
+    }
+    if (currentUser) {
+      supabaseClient.auth.signOut();
+    } else {
+      openAuthModal();
+    }
+  });
+
+  authToggleModeBtn.addEventListener('click', () => {
+    authMode = authMode === 'signin' ? 'signup' : 'signin';
+    applyAuthMode();
+    authFeedbackEl.style.display = 'none';
+  });
+
+  authCloseBtn.addEventListener('click', closeAuthModal);
+  authOverlay.addEventListener('click', (e) => {
+    if (e.target === authOverlay) closeAuthModal();
+  });
+
+  authSubmitBtn.addEventListener('click', async () => {
+    const email = authEmailEl.value.trim();
+    const password = authPasswordEl.value;
+    if (!email || !password) return;
+
+    authSubmitBtn.disabled = true;
+    authFeedbackEl.style.display = 'none';
+
+    try {
+      const result = authMode === 'signin'
+        ? await supabaseClient.auth.signInWithPassword({ email, password })
+        : await supabaseClient.auth.signUp({ email, password });
+
+      if (result.error) throw result.error;
+
+      if (authMode === 'signup' && result.data && result.data.user && !result.data.session) {
+        authFeedbackEl.style.display = 'block';
+        authFeedbackEl.className = 'quiz-feedback correct';
+        authFeedbackEl.textContent = 'Check your email to confirm your account, then sign in.';
+        return;
+      }
+
+      closeAuthModal();
+      offerLegacyImport();
+    } catch (err) {
+      authFeedbackEl.style.display = 'block';
+      authFeedbackEl.className = 'quiz-feedback incorrect';
+      authFeedbackEl.textContent = (err && err.message) || 'Something went wrong.';
+    } finally {
+      authSubmitBtn.disabled = false;
+    }
+  });
+
+  async function offerLegacyImport() {
+    if (!currentUser) return;
+    const flagKey = 'legacy_import_offered_' + currentUser.id;
+    if (localStorage.getItem(flagKey)) return;
+    localStorage.setItem(flagKey, '1');
+
+    const wantsImport = window.confirm(
+      'Import your old flashcards and history from before accounts existed? You will need the old app passphrase.'
+    );
+    if (!wantsImport) return;
+
+    const oldSecret = window.prompt('Enter your old app passphrase:');
+    if (!oldSecret) return;
+
+    try {
+      const { data: sessionData } = await supabaseClient.auth.getSession();
+      const token = sessionData && sessionData.session ? sessionData.session.access_token : null;
+      if (!token) throw new Error('Not signed in');
+
+      const response = await fetch('/api/migrate-legacy', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer ' + token,
+          'x-app-secret': oldSecret
+        }
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'Import failed');
+
+      if (data.migrated && data.migrated.length) {
+        alert('Imported: ' + data.migrated.join(', ') + '.');
+        loadHistory();
+        loadFlashcards();
+      } else {
+        alert('No old data found to import.');
+      }
+    } catch (err) {
+      alert("Couldn't import: " + ((err && err.message) || 'unknown error'));
+    }
+  }
+
+  function initAuth() {
+    if (!supabaseClient) {
+      loadHistory();
+      loadFlashcards();
+      return;
+    }
+    supabaseClient.auth.onAuthStateChange((event, session) => {
+      currentUser = session ? session.user : null;
+      updateAuthUI();
+      loadHistory();
+      loadFlashcards();
+    });
+  }
+
+  initAuth();
   resultWrap.classList.add('visible');
 
   input.addEventListener('focus', () => {
