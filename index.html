@@ -1038,8 +1038,8 @@
   // Fill these in with your project's values from Supabase: Settings > Data API
   // (Project URL) and Settings > API Keys (the "anon" / "publishable" key -
   // NOT the service_role key, which must never appear in frontend code).
-  const SUPABASE_URL = 'https://wddplglfsjjwppvisuqs.supabase.co';
-  const SUPABASE_ANON_KEY = 'sb_publishable_sn2RLEVf74HS6TvyjSEmUA_SzaPKgqm';
+  const SUPABASE_URL = 'YOUR_SUPABASE_URL';
+  const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
 
   const supabaseClient = (window.supabase && SUPABASE_URL.indexOf('http') === 0)
     ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
@@ -1077,19 +1077,14 @@
   }
 
   async function appStorageGet(key) {
-    if (!currentUser || !supabaseClient) {
-      console.log('[DEBUG] appStorageGet: no currentUser, using guest storage for', key, 'currentUser=', currentUser);
-      return guestStorageGet(key);
-    }
+    if (!currentUser || !supabaseClient) return guestStorageGet(key);
     try {
-      console.log('[DEBUG] appStorageGet: querying user_data for user', currentUser.id, 'key', key);
       const { data, error } = await supabaseClient
         .from('user_data')
         .select('value')
         .eq('user_id', currentUser.id)
         .eq('key', key)
         .maybeSingle();
-      console.log('[DEBUG] appStorageGet result:', { data, error });
       if (error) throw error;
       return { value: data && data.value != null ? JSON.stringify(data.value) : null };
     } catch (e) {
