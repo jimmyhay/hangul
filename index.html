@@ -850,7 +850,10 @@
     </div>
     <div class="auth-row">
       <span class="auth-status" id="authStatus">Not signed in</span>
-      <button class="auth-btn" id="authBtn">Sign in</button>
+      <div style="display:flex; gap:8px;">
+        <button class="auth-btn" id="importBtn" style="display:none;">Import old data</button>
+        <button class="auth-btn" id="authBtn">Sign in</button>
+      </div>
     </div>
   </div>
 
@@ -1035,8 +1038,8 @@
   // Fill these in with your project's values from Supabase: Settings > Data API
   // (Project URL) and Settings > API Keys (the "anon" / "publishable" key -
   // NOT the service_role key, which must never appear in frontend code).
-  const SUPABASE_URL = 'https://wddplglfsjjwppvisuqs.supabase.co/rest/v1/';
-  const SUPABASE_ANON_KEY = 'sb_publishable_sn2RLEVf74HS6TvyjSEmUA_SzaPKgqm';
+  const SUPABASE_URL = 'YOUR_SUPABASE_URL';
+  const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
 
   const supabaseClient = (window.supabase && SUPABASE_URL.indexOf('http') === 0)
     ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
@@ -1176,6 +1179,7 @@
   const exampleAnotherBtn = document.getElementById('exampleAnotherBtn');
   const authStatusEl = document.getElementById('authStatus');
   const authBtn = document.getElementById('authBtn');
+  const importBtn = document.getElementById('importBtn');
   const authOverlay = document.getElementById('authOverlay');
   const authTitleEl = document.getElementById('authTitle');
   const authSubtitleEl = document.getElementById('authSubtitle');
@@ -1215,11 +1219,18 @@
     if (currentUser) {
       authStatusEl.textContent = currentUser.email;
       authBtn.textContent = 'Sign out';
+      importBtn.style.display = 'inline-block';
     } else {
       authStatusEl.textContent = 'Not signed in';
       authBtn.textContent = 'Sign in';
+      importBtn.style.display = 'none';
     }
   }
+
+  importBtn.addEventListener('click', () => {
+    if (!currentUser) return;
+    promptLegacyImport();
+  });
 
   function applyAuthMode() {
     if (authMode === 'signin') {
@@ -1304,36 +1315,30 @@
     }
   });
 
-  async function offerLegacyImport() {
-    if (!currentUser) return;
-    const flagKey = 'legacy_import_offered_' + currentUser.id;
-    if (localStorage.getItem(flagKey)) return;
-    localStorage.setItem(flagKey, '1');
+  async function runLegacyImport(oldSecret) {
+    const { data: sessionData } = await supabaseClient.auth.getSession();
+    const token = sessionData && sessionData.session ? sessionData.session.access_token : null;
+    if (!token) throw new Error('Not signed in');
 
-    const wantsImport = window.confirm(
-      'Import your old flashcards and history from before accounts existed? You will need the old app passphrase.'
-    );
-    if (!wantsImport) return;
+    const response = await fetch('/api/migrate-legacy', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: 'Bearer ' + token,
+        'x-app-secret': oldSecret
+      }
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || 'Import failed');
+    return data;
+  }
 
+  async function promptLegacyImport() {
     const oldSecret = window.prompt('Enter your old app passphrase:');
     if (!oldSecret) return;
 
     try {
-      const { data: sessionData } = await supabaseClient.auth.getSession();
-      const token = sessionData && sessionData.session ? sessionData.session.access_token : null;
-      if (!token) throw new Error('Not signed in');
-
-      const response = await fetch('/api/migrate-legacy', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: 'Bearer ' + token,
-          'x-app-secret': oldSecret
-        }
-      });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || 'Import failed');
-
+      const data = await runLegacyImport(oldSecret);
       if (data.migrated && data.migrated.length) {
         alert('Imported: ' + data.migrated.join(', ') + '.');
         loadHistory();
@@ -1341,9 +1346,24 @@
       } else {
         alert('No old data found to import.');
       }
+      if (currentUser) localStorage.setItem('legacy_import_offered_' + currentUser.id, '1');
     } catch (err) {
+      console.error('Legacy import failed', err);
       alert("Couldn't import: " + ((err && err.message) || 'unknown error'));
     }
+  }
+
+  async function offerLegacyImport() {
+    if (!currentUser) return;
+    const flagKey = 'legacy_import_offered_' + currentUser.id;
+    if (localStorage.getItem(flagKey)) return;
+
+    const wantsImport = window.confirm(
+      'Import your old flashcards and history from before accounts existed? You will need the old app passphrase.'
+    );
+    if (!wantsImport) return;
+
+    await promptLegacyImport();
   }
 
   function initAuth() {
