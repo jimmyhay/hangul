@@ -837,6 +837,68 @@
     color: var(--ink);
     margin: 0 0 4px;
   }
+
+  .story-panel .story-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; }
+  .story-panel .label { font-family: "Noto Sans KR", "Noto Sans JP", sans-serif; font-weight: 600; font-size: 20px; color: var(--ink); }
+  .story-sub { font-size: 13px; color: var(--stone); margin: 0 0 16px; line-height: 1.5; }
+  .story-controls { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; }
+  .story-field { display: flex; flex-direction: column; gap: 4px; flex: 1 1 140px; min-width: 0; }
+  .story-field label { font-size: 11.5px; font-weight: 500; color: var(--stone); text-transform: uppercase; letter-spacing: 0.04em; }
+  .story-field select, .story-field input {
+    width: 100%; font-family: "Inter", sans-serif; font-size: 16px; color: var(--ink);
+    background: var(--paper); border: 1px solid var(--stone-light); border-radius: 10px; padding: 9px 10px;
+  }
+  .story-field select:focus, .story-field input:focus { outline: none; border-color: var(--seal-soft); }
+  .story-btn {
+    border: none; background: var(--seal); color: var(--card); font-size: 14px; font-weight: 500;
+    padding: 11px 20px; border-radius: 100px; cursor: pointer; font-family: "Inter", sans-serif; flex: 0 0 auto;
+  }
+  .story-btn:hover { background: var(--ink-deep); }
+  .story-btn:disabled { background: var(--stone-light); color: var(--stone); cursor: default; }
+  .story-status { font-size: 13px; color: var(--stone); margin-top: 12px; min-height: 18px; }
+  .story-status.error { color: var(--seal); }
+  .story-output { margin-top: 18px; display: none; }
+  .story-title { font-family: "Noto Sans KR", sans-serif; font-weight: 700; font-size: 22px; color: var(--seal); margin: 0 0 2px; }
+  .story-title-en { font-size: 13px; color: var(--stone); margin-bottom: 14px; }
+  .story-para { font-family: "Noto Sans KR", sans-serif; font-size: 18px; line-height: 1.95; color: var(--ink); margin: 0 0 6px; }
+  .story-para-en { font-size: 14px; line-height: 1.6; color: var(--ink-soft); margin: 0 0 14px; padding-left: 12px; border-left: 3px solid var(--stone-light); display: none; }
+  .story-output.show-en .story-para-en { display: block; }
+  .story-actions { display: flex; flex-wrap: wrap; gap: 10px; margin: 14px 0 4px; }
+  .story-link-btn {
+    border: 1px solid var(--stone-light); background: transparent; color: var(--ink-soft); font-size: 12.5px;
+    padding: 6px 14px; border-radius: 100px; cursor: pointer; font-family: "Inter", sans-serif;
+  }
+  .story-link-btn:hover { border-color: var(--seal-soft); color: var(--seal); }
+  .story-newwords { margin-top: 18px; background: var(--seal-tint); border-radius: 12px; padding: 14px 16px; }
+  .story-newwords h4 { margin: 0 0 8px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--seal); font-weight: 600; }
+  .story-nw { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 5px 0; font-size: 14px; }
+  .story-nw b { font-family: "Noto Sans KR", sans-serif; font-weight: 600; font-size: 16px; }
+  .story-nw span { color: var(--ink-soft); flex: 1; text-align: right; }
+  .story-nw button { border: 1px solid var(--seal-soft); background: transparent; color: var(--seal); border-radius: 100px; font-size: 11.5px; padding: 3px 10px; cursor: pointer; font-family: "Inter", sans-serif; white-space: nowrap; }
+  .story-nw button:disabled { opacity: 0.55; cursor: default; }
+  .story-grammar { margin-top: 12px; font-size: 12.5px; color: var(--stone); line-height: 1.6; }
+  .story-field-wide { flex: 1 1 100%; }
+  .topic-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; align-items: center; }
+  .topic-chip {
+    border: 1px solid var(--stone-light); background: transparent; color: var(--ink-soft); font-size: 13px;
+    padding: 6px 12px; border-radius: 100px; cursor: pointer; font-family: "Inter", sans-serif;
+  }
+  .topic-chip:hover { border-color: var(--seal-soft); color: var(--seal); }
+  .topic-chip.active { background: var(--seal-tint); border-color: var(--seal); color: var(--seal); font-weight: 500; }
+  .topic-shuffle { border: none; background: transparent; color: var(--stone); font-size: 12.5px; cursor: pointer; padding: 6px 8px; font-family: "Inter", sans-serif; }
+  .topic-shuffle:hover { color: var(--seal); }
+  .flashcard-story-check {
+    position: absolute; bottom: 6px; left: 50%; transform: translateX(-50%);
+    width: 26px; height: 26px; border-radius: 8px; border: 1.5px solid var(--stone);
+    background: rgba(255,255,255,0.7); color: transparent; cursor: pointer; z-index: 2;
+    display: flex; align-items: center; justify-content: center; padding: 0;
+  }
+  .flashcard-story-check svg { width: 15px; height: 15px; display: block; }
+  .flashcard-story-check:hover { border-color: var(--seal); }
+  .flashcard-story-check.checked { background: var(--seal); border-color: var(--seal); color: var(--card); }
+  .story-included { font-size: 13px; color: var(--ink-soft); margin-top: 12px; display: none; line-height: 1.5; }
+  .story-included b { font-family: "Noto Sans KR", sans-serif; font-weight: 600; }
+  .story-included button { border: none; background: none; color: var(--seal); font-size: 12.5px; cursor: pointer; padding: 0 0 0 6px; font-family: "Inter", sans-serif; text-decoration: underline; }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -912,6 +974,30 @@
         </div>
       </div>
     </div>
+  </div>
+
+  <div class="panel story-panel" id="storyPanel">
+    <div class="story-head"><span class="label">Reading practice</span></div>
+    <p class="story-sub">Set how far you are in Talk To Me In Korean's Core Grammar course and get a short story that only uses grammar you've already learned, with a few new words to stretch you.</p>
+    <div class="story-controls">
+      <div class="story-field">
+        <label for="storyLevel">Level</label>
+        <select id="storyLevel"></select>
+      </div>
+      <div class="story-field">
+        <label for="storyLesson">Completed up to</label>
+        <select id="storyLesson"></select>
+      </div>
+      <div class="story-field story-field-wide">
+        <label for="storyTopic">Topic (optional)</label>
+        <input type="text" id="storyTopic" placeholder="Type your own idea, or pick one below" maxlength="80">
+        <div class="topic-chips" id="topicChips"></div>
+      </div>
+      <button class="story-btn" id="storyBtn">Write me a story</button>
+    </div>
+    <div class="story-included" id="storyIncluded"></div>
+    <div class="story-status" id="storyStatus"></div>
+    <div class="story-output" id="storyOutput"></div>
   </div>
 
   <div class="panel flashcards">
@@ -1047,8 +1133,8 @@
   // Fill these in with your project's values from Supabase: Settings > Data API
   // (Project URL) and Settings > API Keys (the "anon" / "publishable" key -
   // NOT the service_role key, which must never appear in frontend code).
-  const SUPABASE_URL = 'https://wddplglfsjjwppvisuqs.supabase.co';
-  const SUPABASE_ANON_KEY = 'sb_publishable_sn2RLEVf74HS6TvyjSEmUA_SzaPKgqm';
+  const SUPABASE_URL = 'YOUR_SUPABASE_URL';
+  const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
 
   const supabaseClient = (window.supabase && SUPABASE_URL.indexOf('http') === 0)
     ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
@@ -1392,10 +1478,355 @@
     await promptLegacyImport();
   }
 
+const TTMIK_CURRICULUM = [["Hello, Thank you / 안녕하세요, 감사합니다","Yes, No, What? / 네, 아니요, 네?","Goodbye, See you / 안녕히 계세요, 안녕히 가세요","I am sorry, Excuse me / 죄송합니다, 저기요","It is me, What is it? / -이에요, -예요","This is…, What is this? / 이거…, 이거 뭐예요?","This, That, It / 이, 저, 그, 거/것","It is NOT me / 아니에요","Topic/Subject Marking Particles / -은/는, -이/가","Have, Do not have, There is, There is not / 있어요, 없어요","Please give me… / … 주세요","It is delicious, It tastes awful, Thank you for the food/ 맛있어요, 잘 먹겠습니다","I want to… / -고 싶어요","What do you want to do? / 뭐 -고 싶어요?","Sino-Korean Numbers / 일, 이, 삼, 사, …","Basic Present Tense / -아/어/여요","Past Tense / -았/었/였어요","Location Marking Particles / 어디, -에, -에서","When / 언제","Native Korean Numbers / 하나, 둘, 셋, 넷, …","Negative Sentences / 안, -지 않다","Verbs / 하다","Who? / 누구?","Why? How? / 왜? 어떻게?","From A To B, From C Until D / -에서/부터 -까지","Essential Review"],["Future Tense / -ㄹ/을 거예요, 할 거예요","Object-marking Particles / -을, -를","And, and then, therefore, so / 그리고, 그래서","And, with / -하고, -(이)랑","Days In A Week / 요일","But, However / 그렇지만, 그런데","“To” someone, “From” someone / 한테, 한테서","Telling The Time","Counters / 개, 명","Present Progressive / -고 있어요","Self-introduction / 자기소개","What Is Today’s Date? / 날짜","Too, Also / -도 (part 1)","Too, Also / -도 (part 2)","Only / -만","Very, A bit, Really, Not really, Not at all / 아주, 조금, 진짜, 별로, 전혀","Can, Cannot / -ㄹ 수 있다/없다","To be good/poor at … / 잘하다/못하다","Making Verbs Into Nouns / -는 것","Have to, Should, Must / -아/어/여야 되다/하다","More.. than… / -보다 더","To like / 좋다 vs. 좋아하다","If, In case / 만약, -(으)면","Still, Already / 아직, 벌써","Something, Someday, Someone, Somewhere / 누군가, 무언가, 어딘가, 언젠가","Imperative / -(으)세요","Please do it for me. / -아/어/여 주세요","Particles For Method, Way / -(으)로","More, All / 더, 다","Don’t do it. / -지 마세요","Essential Review"],["Too much, Very / 너무","Linking Verbs with -고","In front of, Behind, On top of, Under, Next to / 앞에, 뒤에, 위에, 밑에, 옆에","Shall we? / I wonder / -(으)ㄹ까요?","Approximately, About / 쯤, 약, 정도","Future Tenses / -(으)ㄹ 거예요 vs -(으)ㄹ게요","Linking Verbs With -아/어/여서","To look like, To seem like / 같아요","To seem like, To look like (with verbs) / -ㄴ 것 같아요","Before -ing / -기 전에","ㅂ irregular / ㅂ 불규칙","But still, Nevertheless / 그래도","Making Adjectives / Descriptive Verbs + -ㄴ 명사","Making Adjectives / Action Verbs + -는/(으)ㄴ/(으)ㄹ + 명사","Well then, In that case, If so / 그러면, 그럼","Let’s / -아/어/여요 (청유형)","In order to, For the sake of / 위하다, 위해, 위해서","Nothing but, Only / 밖에 + 부정형","After -ing / 다음에","Even if, Even though / -아/어/여도","Linking Verbs / -는/은/ㄴ데","Maybe I might… / -(으)ㄹ 수도 있어요","Word Builder 1 / 학(學)","르 irregular / 르 불규칙","Verb Ending / -네요","ㄷ irregular / ㄷ 불규칙","Politeness Levels / 반말 and 존댓말","“Let’s” in casual language / 반말","ㅅ irregular / ㅅ 불규칙","Word Builder 2 / 실(室)"],["The more … the more … / -(으)면 -(으)ㄹ수록","Do you want to …? / -(으)ㄹ래요?","It can’t be … / -(으)ㄹ 리가 없어요, 할 리가 없어요","Verb ending -지요/-죠","“당신” and “you”","Word builder 3 / 동(動)","It’s okay. I’m okay. / 괜찮아요","It is okay to…, You don’t have to… / -아/어/여도 돼요, 해도 돼요","You shouldn’t…, You’re not supposed to… / -(으)면 안 돼요, 하면 안 돼요","Among, Between / 사이에, 사이에서, 중에, 중에서","Anybody, Anything, Anywhere / 아무나, 아무도, 아무거나, 아무것도","To try doing something / -아/어/여 보다, 해 보다","Word builder 4 / 불(不)","Sometimes, Often, Always, Never, Seldom / 가끔, 자주, 별로, 맨날, 항상","Any / 아무 (part 2)","Spacing in Korean / 띄어쓰기","Word Contractions (part 1) / 주격 조사, 축약형","Most, Best (superlative) / 최상급, 최고","Less, Not completely / 덜","Sentence Building Drill #1","Spacing (part 2) / 띄어쓰기","Word builder 5 / 장(場)","Word Contractions (part 2)","Much (more), Much (less) / 훨씬","-(으)ㄹ + noun (future tense noun group) / -(으)ㄹ + 명사, 할 것","-(으)ㄴ + noun (past tense noun group) / -(으)ㄴ + 명사, 한 것","I think … (+ future tense) / -(으)ㄴ/(으)ㄹ/ㄴ 것 같다, 한 것 같다, 할 것 같다","To become + adjective / -아/어/여지다","To gradually/eventually get to do something / -게 되다, 하게 되다","Sentence Building Drill #2","Essential Review"],["Almost did / -(으)ㄹ 뻔했다, 할 뻔했다","Honorific Suffix: -(으)시- / -(으)시-","Good work / 수고","I guess, I assume (Part 1) / -나 보다","I guess, I assume (Part 2) / -(으)ㄴ가 보다","Word builder 6 / 문(文)","As soon as… / -자마자, 하자마자","It is about to …, I am planning to … / -(으)려고 하다, 하려고 하다","While I was doing, and then / -다가, 하다가","(To say) that something/someone is + noun / 명사 + -(이)라고 (말하다)","Sentence Building Drill 3","Noun + that is called / that people say is + noun / -(이)라는","Word Builder lesson 7 / 회 (會)","Since, Because, As / -(으)니까","At least, Instead, It might not be the best but… / -(이)라도","Narrative Present Tense in Korean / -(ㄴ/는)다","To say that ... / -(ㄴ/는)다고 (말하다)","Whether or not / -(으)ㄴ/는지","To tell someone to do something / 동사 + -(으)라고 하다","Sentence Building Drill 4","Word Contractions - Object marker / 축약형 (Part 3) - 목적격 조사","Word builder 8 / 식 (食)","It seems like … / I assume … / -(으)려나 보다","Not A But B, Don’t do THIS but do THAT / 말고, -지 말고","Compared to, Relatively / -에 비해서 -ㄴ/은/는 편이다","Instead of … / 대신에, -는 대신에","You know, Isn’t it, You see…, Come on… / -잖아(요)","To have no other choice but to… / -(으)ㄹ 수밖에 없다","They said that they had done…, They said that they would… / -았/었/였다고, -(으)ㄹ 거라고","Sentence Building Drill 5","Review What You’ve Learned in Level 5"],["How about …? / ~ 어때요?","What do you think about …? / 어떻게 생각하세요? / 어떤 것 같아요?","One of the most … / 가장 ~ 중의 하나","Do you mind if I …? / -아/어/여도 돼요?","I’m in the middle of …-ing / -는 중이에요","Word Builder Lesson 9 / -님","One way or the other / 어차피","I’m not sure if … / -(으/느)ㄴ지 잘 모르겠어요.","While you are at it / -(으)ㄴ/는 김에","Sentence Building Drill 6","I mean… / 그러니까, 제 말 뜻은, -라고요, 말이에요","What do you mean? What does that mean? / 무슨 말이에요?","Word Builder 10 – 과(過)","“/ (slash)” or“and” / -(으)ㄹ 겸","The thing that is called, what they call … / -(이)라는 것","Suffix -겠-","let me tell you… / -거든(요)","Either A or B, Or / -거나, -(이)나, 아니면","To improve, to change, to increase / -아/어/여지다 Part 2","Sentence Building Drill 7","Passive Voice – Part 1","Word Builder 11 / 무 (無)","Passive Voice – Part 2","I DID do it, I DO like it / -기는 하다","Easy/difficult to + V / -기 쉽다/어렵다","I thought I would …, I didn’t think you would … / -(으)ㄴ/ㄹ 줄 알다","Can, to be able to, to know how to / -(으)ㄹ 수 있다, -(으)ㄹ 줄 알다","It depends on … / -에 따라 달라요","Sometimes I do this, sometimes I do that / 어떨 때는 -고, 어떨 때는 -아/어/여요","Sentence Building Drill 8"],["I see that …, I just realized that … / -(는)구나 / -(는)군요","To pretend to + V / -(으/느)ㄴ 척하다/체하다","To be doable/understandable/bearable / -(으)ㄹ 만하다","Like + N / -같이, -처럼","As much as / -((으)ㄹ) 만큼","Word Builder 12 / 원 (院)","Even if …, there is no use / -아/어/여 봤자","I saw that … so / -길래","Because I was… / -느라고","Sentence Building Drill 9","Making Things Happen (Causative)","I saw that… / -더라(고요)","Word Builder 13 / 기 (機)","No matter how… / 아무리 -아/어/여도","What was it again? / 뭐더라?, 뭐였죠?","I said … / -다니까(요), -라니까(요)","They say …/-(느)ㄴ대요/-(이)래요","They say … / -(느)ㄴ다던데요/-(이)라던데요","Making reported questions / -냐고","Sentence Building Drill 10","Didn’t you hear him say … / -(ㄴ/는)다잖아요/-라잖아요","Word Builder 14 / 정 (定)","No matter whether you do it or not / -(으)나 마나","Passive Voice + -어 있다 / To have been put into a certain state","To be bound to + V / -게 되어 있다","On top of …, in addition to … / -(으/느)ㄴ 데다가","As long as / -(느)ㄴ 한, -기만 하면","The thing that is called + Verb / -(ㄴ/는)다는 것","So that …, to the point where … / -도록","Sentence Building Drill 11"],["Advanced Idiomatic Expressions / 눈 (eye) – Part 1","Advanced Idiomatic Expressions / 눈 (eye) – Part 2","Right after + V-ing / -기가 무섭게, -기가 바쁘게","N + that (someone) used to + V / -던","Advanced Situational Expressions: Refusing in Korean","It means … / -(ㄴ/는)다는 뜻이에요","Word Builder 15 / 점 (點)","I hope …, I wish … / -(으)면 좋겠어요","Past Tense (Various Types) / 과거시제 총정리","Advanced Idiomatic Expressions – 귀 (ear)","Sentence Building Drill 12","Present Tense (Various Types) / 현재시제 총정리","Word Builder 16 / 주 (主)","Advanced Situational Expressions: Agreeing","Future Tense (Various Types) / 미래시제 총정리","Advanced Idiomatic Expressions – 가슴 (chest, heart, breast)","If only it is not … / -만 아니면","In the same way that …, just like someone did … / -(으)ㄴ 대로","Even if I would have to, even if that means I have to / -는 한이 있더라도","Sentence Building Drill 13","Advanced Idiomatic Expressions – 머리 (head, hair)","Word Builder 17 / 상 (上)","Advanced Situational Expressions: Making Suggestions in Korean","It is just that …, I only … / -(으)ㄹ 따름이다","Advanced Situational Expressions: Defending in Korean","Advanced Idiomatic Expressions – 몸 (body)","Advanced Situational Expressions: Complimenting in Korean","despite, in spite of / -에도 불구하고","Advanced Situational Expressions: When You Feel Happy","Sentence Building Drill 14","Level 8 Review"],["Advanced Idiomatic Expressions / 손 (Hand)","-아/어/여 버리다 / Completed Action","Advanced Situational Expressions: When You Are Unhappy","-고 말다 / (unintended) completed action","Advanced Situational Expressions: When You Are Worried","Advanced Idiomatic Expressions – 발 (foot)","Word Builder 18 / 비 (非)","Advanced Situational Expressions: Asking a favor","-(으)ㅁ / simplifying a sentence ending","Sentence Building Drill 15","Advanced Idiomatic Expressions – 마음 (mind, heart)","-아/어/여 보이다 / looks like, seems like","Word Builder 19 / 신 (新)","Advanced Situational Expressions: 후회할 때","Advanced Idiomatic Expressions – 기분 (feeling)","-(으)ㄹ 테니(까) / in return for, since it will be …","-(으/느)ㄴ 이상 / as long as, since","-(으)ㄹ까 보다 / expressing concern or reason for a decision","Advanced Situational Expressions: 오랜만에 만났을 때","Sentence Building Drill 16","Advanced Idiomatic Expressions – 생각 (thought, idea)","Word builder 20 / 시(示, 視)","-(으)면서 / while","-(ㄴ/는)다면서(요), -(이)라면서(요) / didn’t you say …","Advanced Situational Expressions: 길을 물어볼 때","Advanced Idiomatic Expressions – 시간 (time)","-더니 / this happened and then that happened","-(으)ㄹ 바에 / might as well, I would rather","Advanced Situational Expressions: 차가 막힐 때","Sentence Building Drill 17","Level 9 Review"],["Advanced Idiomatic Expressions 12 / 얼굴 (Face)","To go/come to do something / -(으)러 가다/오다","I know it is… but it is still… / 아무리 -(이)라지만, 아무리 -(ㄴ/는)다지만","Suggesting Choices / -(이)나, -(이)라도","To decide to, To agree to / -기로 하다","Advanced Idiomatic Expressions 13 / 일 (Work)","Listing Possible Scenarios / -거나, -(ㄴ/는)다거나","While Keeping the Current State / -(으)ㄴ/는 채로","Various Usages of the Ending -걸(요)","Sentence Building Drill 18","Expressing Assumptions / -(으)ㄹ 텐데","Sharing What You Have Seen or Heard / -던데요, -다던데요","As a result of / -는 바람에","Expressing Reactions / -다니/라니","Question Ending: -니?","Various Usages of the Ending -게","It is more of a… than… / -(ㄴ/는)다기보다, -(이)라기보다","Let alone / -은/는커녕","Even if it means I have to… / -아/어/여서라도","Sentence Building Drill 19","Advanced Idiomatic Expressions 14 / 말 (Word)","Various Usages of the Ending -며 / -(으)며, -(이)며","Maybe because… / -아/어/여서인지","I guess I will have to… / -아/어/여야겠다","To be bound to… / -기/게 마련이다","Advanced Idiomatic Expressions 15 / 하나 (One)","Showing Empathy or Shock / 얼마나 -(으)ㄹ까(요), 얼마나 -(으)면","싶다 used to mean “to think” or “to wonder” / -(으/느)ㄴ가 싶다, -나 싶다, -(으)ㄹ까 싶다","Double Negative = Positive / 없지 않다, 없지 않아 있다","Sentence Building Drill 20","Level 10 Review"]];
+
+  const STORY_PROGRESS_KEY = 'ttmik_progress';
+  const storyLevelEl = document.getElementById('storyLevel');
+  const storyLessonEl = document.getElementById('storyLesson');
+  const storyTopicEl = document.getElementById('storyTopic');
+  const storyBtn = document.getElementById('storyBtn');
+  const storyStatus = document.getElementById('storyStatus');
+  const storyOutput = document.getElementById('storyOutput');
+  let storyProgressLoadSeq = 0;
+  let storyRequestId = 0;
+
+  function isGrammarLesson(title) {
+    return !/^(Sentence Building|Word [Bb]uilder|Review|Essential Review|Level \d+ Review)/i.test(title) && !/^Review What/i.test(title);
+  }
+
+  function fillStoryLevels() {
+    storyLevelEl.innerHTML = '';
+    for (let i = 1; i <= TTMIK_CURRICULUM.length; i++) {
+      const o = document.createElement('option');
+      o.value = String(i);
+      o.textContent = 'Level ' + i;
+      storyLevelEl.appendChild(o);
+    }
+  }
+
+  function fillStoryLessons(level, selected) {
+    const lessons = TTMIK_CURRICULUM[level - 1];
+    storyLessonEl.innerHTML = '';
+    if (level > 1) {
+      const none = document.createElement('option');
+      none.value = '0';
+      none.textContent = 'Nothing yet in this level';
+      storyLessonEl.appendChild(none);
+    }
+    lessons.forEach((title, idx) => {
+      const o = document.createElement('option');
+      o.value = String(idx + 1);
+      const short = title.length > 52 ? title.slice(0, 50) + '…' : title;
+      o.textContent = 'Lesson ' + (idx + 1) + ' – ' + short;
+      storyLessonEl.appendChild(o);
+    });
+    let want = selected;
+    if (want == null) want = level > 1 ? 0 : 1;
+    if (level === 1 && want < 1) want = 1;
+    storyLessonEl.value = String(Math.min(want, lessons.length));
+  }
+
+  function getStoryProgress() {
+    return { level: parseInt(storyLevelEl.value, 10) || 1, lesson: parseInt(storyLessonEl.value, 10) || 0 };
+  }
+
+  async function saveStoryProgress() {
+    try { await appStorageSet(STORY_PROGRESS_KEY, JSON.stringify(getStoryProgress())); } catch (e) {}
+  }
+
+  async function loadStoryProgress() {
+    const seq = ++storyProgressLoadSeq;
+    let prog = null;
+    try {
+      const res = await appStorageGet(STORY_PROGRESS_KEY);
+      if (res && res.value) prog = JSON.parse(res.value);
+    } catch (e) {}
+    if (seq !== storyProgressLoadSeq) return;
+    const level = prog && prog.level >= 1 && prog.level <= TTMIK_CURRICULUM.length ? prog.level : 1;
+    storyLevelEl.value = String(level);
+    fillStoryLessons(level, prog ? prog.lesson : null);
+  }
+
+  storyLevelEl.addEventListener('change', () => {
+    fillStoryLessons(parseInt(storyLevelEl.value, 10), null);
+    saveStoryProgress();
+  });
+  storyLessonEl.addEventListener('change', saveStoryProgress);
+
+  function collectGrammar(level, lesson) {
+    const learned = [];
+    const upcoming = [];
+    TTMIK_CURRICULUM.forEach((lessons, li) => {
+      lessons.forEach((title, ti) => {
+        if (!isGrammarLesson(title)) return;
+        const lv = li + 1, ls = ti + 1;
+        if (lv < level || (lv === level && ls <= lesson)) learned.push('L' + lv + '.' + ls + ' ' + title);
+        else if (upcoming.length < 25) upcoming.push(title);
+      });
+    });
+    return { learned, upcoming };
+  }
+
+  function buildStorySystemPrompt(level, lesson, topic, mustUse) {
+    const g = collectGrammar(level, lesson);
+    const bandWords = level <= 2 ? 'very basic everyday vocabulary (the kind in the first TTMIK levels)'
+      : level <= 5 ? 'common everyday vocabulary suited to a beginner-intermediate learner'
+      : 'a broader vocabulary suited to an intermediate learner';
+    return 'You write short graded-reader stories in Korean for a learner studying the Talk To Me In Korean (TTMIK) Core Grammar course. The learner has completed Level ' + level + ', up to Lesson ' + lesson + (lesson === 0 ? ' (i.e. nothing yet in Level ' + level + ', only Levels 1 to ' + (level - 1) + ')' : '') + '.\n\n' +
+      'GRAMMAR THEY KNOW (you may ONLY use these grammar points, plus basic particles, plain nouns, verbs and adjectives conjugated in forms covered below):\n' + g.learned.join('\n') + '\n\n' +
+      'GRAMMAR THEY HAVE NOT LEARNED YET - do NOT use any of these patterns or endings, or any other advanced grammar not in the known list:\n' + g.upcoming.join('\n') + '\n\n' +
+      'STRICT RULES:\n' +
+      '1. Length: about 250 Korean words (roughly 15 to 25 short sentences), split into 3 to 5 short paragraphs.\n' +
+      '2. Grammar: stay inside the known grammar list. Prefer polite -아/어요 style endings unless the known list covers something else. Keep sentences short and clear. Avoid connecting patterns, endings, quotation forms, honorifics, causatives, passives or expressions that are not in the known list.\n' +
+      '3. Vocabulary: use ' + bandWords + '. Introduce ONLY 3 to 5 new vocabulary words (nouns, verbs or adjectives, not grammar) that a learner at this stage may not know yet, and make their meaning guessable from context. Repeat each new word at least twice.\n' +
+      '4. Make it a coherent, engaging little story with a beginning, middle and end' + (topic ? ', on this topic: ' + topic : ', on a topic of your choice') + '.\n' +
+      '5. Write the Korean naturally with normal spacing and punctuation.\n' +
+      (mustUse && mustUse.length ? '6. The learner has chosen these saved vocabulary words and wants to practise them: ' + mustUse.join(', ') + '. Use EVERY one of them naturally in the story at least once (conjugated only with grammar from the known list). Do NOT list these words in newWords; newWords is only for the extra 3 to 5 words you introduce yourself.\n' : '') + '\n' +
+      'Respond with ONLY a JSON object, no markdown fences, no preamble, in this exact shape: {"title":"Korean title","titleEn":"English title","paragraphs":[{"ko":"Korean paragraph","en":"natural English translation of that paragraph"}],"newWords":[{"word":"dictionary form of new word","meaning":"short English meaning"}],"grammarUsed":["short names of the main grammar points used, e.g. -고 싶어요"]}';
+  }
+
+  function setStoryStatus(msg, isError) {
+    storyStatus.textContent = msg || '';
+    storyStatus.classList.toggle('error', !!isError);
+  }
+
+  function renderStory(story, level, lesson) {
+    storyOutput.innerHTML = '';
+    storyOutput.classList.remove('show-en');
+
+    const title = document.createElement('h3');
+    title.className = 'story-title';
+    title.textContent = story.title || '';
+    storyOutput.appendChild(title);
+    const titleEn = document.createElement('div');
+    titleEn.className = 'story-title-en';
+    titleEn.textContent = story.titleEn || '';
+    storyOutput.appendChild(titleEn);
+
+    (story.paragraphs || []).forEach((para) => {
+      const ko = document.createElement('p');
+      ko.className = 'story-para';
+      ko.appendChild(makeClickableText(para.ko || '', para.ko || '', 'English'));
+      storyOutput.appendChild(ko);
+      const en = document.createElement('p');
+      en.className = 'story-para-en';
+      en.textContent = para.en || '';
+      storyOutput.appendChild(en);
+    });
+
+    const actions = document.createElement('div');
+    actions.className = 'story-actions';
+    const toggle = document.createElement('button');
+    toggle.className = 'story-link-btn';
+    toggle.textContent = 'Show English translation';
+    toggle.addEventListener('click', () => {
+      const on = storyOutput.classList.toggle('show-en');
+      toggle.textContent = on ? 'Hide English translation' : 'Show English translation';
+    });
+    actions.appendChild(toggle);
+    const hint = document.createElement('span');
+    hint.style.cssText = 'font-size:12px;color:var(--stone);align-self:center;';
+    hint.textContent = 'Tap any word for a quick gloss.';
+    actions.appendChild(hint);
+    storyOutput.appendChild(actions);
+
+    const words = (story.newWords || []).filter(w => w && w.word);
+    if (words.length) {
+      const box = document.createElement('div');
+      box.className = 'story-newwords';
+      const h = document.createElement('h4');
+      h.textContent = 'New words';
+      box.appendChild(h);
+      words.forEach((w) => {
+        const row = document.createElement('div');
+        row.className = 'story-nw';
+        const b = document.createElement('b');
+        b.textContent = w.word;
+        const m = document.createElement('span');
+        m.textContent = w.meaning || '';
+        const add = document.createElement('button');
+        add.textContent = 'Save as card';
+        add.addEventListener('click', async () => {
+          add.disabled = true;
+          add.textContent = 'Saving…';
+          try {
+            await saveStoryWordAsCard(w.word);
+            add.textContent = 'Saved ✓';
+          } catch (e) {
+            add.disabled = false;
+            add.textContent = 'Try again';
+          }
+        });
+        row.appendChild(b);
+        row.appendChild(m);
+        row.appendChild(add);
+        box.appendChild(row);
+      });
+      storyOutput.appendChild(box);
+    }
+
+    if (story.grammarUsed && story.grammarUsed.length) {
+      const g = document.createElement('div');
+      g.className = 'story-grammar';
+      g.textContent = 'Grammar used: ' + story.grammarUsed.join(' · ');
+      storyOutput.appendChild(g);
+    }
+    storyOutput.style.display = 'block';
+  }
+
+  async function generateStory() {
+    const { level, lesson } = getStoryProgress();
+    const topic = storyTopicEl.value.trim();
+    const myId = ++storyRequestId;
+    storyBtn.disabled = true;
+    setStoryStatus('Writing your story… this can take 10–20 seconds.');
+    try {
+      const response = await fetch('/api/claude', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          max_tokens: 6000,
+          system: buildStorySystemPrompt(level, lesson, topic, getStoryCardWords().slice(0, 8)),
+          messages: [{ role: 'user', content: 'Write the story now. Learner progress: Level ' + level + ', Lesson ' + lesson + '.' }]
+        })
+      });
+      const data = await response.json();
+      if (myId !== storyRequestId) return;
+      if (!response.ok) throw new Error(typeof data.error === 'string' ? data.error : "Couldn't write a story. Try again.");
+      const textBlocks = (data.content || []).filter(b => b.type === 'text' && b.text);
+      const raw = textBlocks.length ? textBlocks[textBlocks.length - 1].text.trim() : '';
+      const cleaned = raw.replace(/^```json/i, '').replace(/^```/, '').replace(/```$/, '').trim();
+      const story = JSON.parse(cleaned);
+      if (!story.paragraphs || !story.paragraphs.length) throw new Error('empty');
+      renderStory(story, level, lesson);
+      setStoryStatus('');
+    } catch (e) {
+      if (myId !== storyRequestId) return;
+      console.error('Story failed', e);
+      setStoryStatus(e && e.message && e.message !== 'empty' && !(e instanceof SyntaxError) ? e.message : "Couldn't write a story. Try again.", true);
+    } finally {
+      if (myId === storyRequestId) storyBtn.disabled = false;
+    }
+  }
+
+  async function saveStoryWordAsCard(word) {
+    const response = await fetch('/api/claude', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        max_tokens: 200,
+        system: 'Give the English translation of the Korean word "' + word + '". Respond with ONLY a JSON object, no markdown fences: {"translation":"short English translation","romanization":"Revised Romanization"}.',
+        messages: [{ role: 'user', content: word }]
+      })
+    });
+    const data = await response.json();
+    const textBlocks = (data.content || []).filter(b => b.type === 'text' && b.text);
+    const raw = textBlocks.length ? textBlocks[textBlocks.length - 1].text.trim() : '';
+    const cleaned = raw.replace(/^```json/i, '').replace(/^```/, '').replace(/```$/, '').trim();
+    const parsedW = JSON.parse(cleaned);
+    const t = parsedW.translation;
+    const rom = parsedW.romanization;
+    if (!t) throw new Error('no translation');
+    if (!flashcards.some(c => c.source === word)) {
+      saveFlashcard({
+        source: word,
+        direction: 'ko-en',
+        result: { translation: t, romanization: rom || '', examples: [] }
+      }, 'Story words');
+    }
+  }
+
+
+  const STORY_TOPIC_IDEAS = [
+    'A trip to the market', 'Ordering at a cafe', 'A rainy day at home', 'Meeting a new friend',
+    'Lost in the city', 'A birthday surprise', 'Cooking dinner for family', 'A day at the beach',
+    'Taking the subway to work', 'A visit to the doctor', 'Shopping for clothes', 'A walk in the park',
+    'My neighbour\'s cat', 'A school day', 'Planning a holiday', 'A late-night snack',
+    'Moving to a new apartment', 'A phone call with grandma', 'A mysterious package', 'Hiking up a mountain',
+    'A first day at a new job', 'Losing my umbrella', 'A festival in the village', 'Learning to ride a bike'
+  ];
+  const topicChipsEl = document.getElementById('topicChips');
+  const storyIncludedEl = document.getElementById('storyIncluded');
+
+  function getStoryCardWords() {
+    const words = [];
+    flashcards.forEach((c) => {
+      if (!c.inStory) return;
+      const dir = String(c.direction || '');
+      let w = '';
+      if (dir.indexOf('ko-') === 0) w = c.source;
+      else if (/-ko$/.test(dir)) w = c.translation;
+      if (w && words.indexOf(w) === -1) words.push(w);
+    });
+    return words;
+  }
+
+  function updateStoryIncluded() {
+    const words = getStoryCardWords();
+    storyIncludedEl.innerHTML = '';
+    if (!words.length) { storyIncludedEl.style.display = 'none'; return; }
+    storyIncludedEl.style.display = 'block';
+    storyIncludedEl.appendChild(document.createTextNode('Including from your flashcards: '));
+    const b = document.createElement('b');
+    b.textContent = words.slice(0, 8).join(', ');
+    storyIncludedEl.appendChild(b);
+    if (words.length > 8) storyIncludedEl.appendChild(document.createTextNode(' (first 8 used)'));
+    const clear = document.createElement('button');
+    clear.textContent = 'Clear';
+    clear.addEventListener('click', () => {
+      flashcards.forEach(c => { c.inStory = false; });
+      persistFlashcards();
+      renderFlashcards();
+    });
+    storyIncludedEl.appendChild(clear);
+  }
+
+
+  function syncTopicChipHighlight() {
+    const val = storyTopicEl.value.trim().toLowerCase();
+    topicChipsEl.querySelectorAll('.topic-chip').forEach((c) => {
+      c.classList.toggle('active', c.textContent.toLowerCase() === val);
+    });
+  }
+
+  function renderTopicChips() {
+    topicChipsEl.innerHTML = '';
+    const pool = STORY_TOPIC_IDEAS.slice();
+    for (let i = pool.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [pool[i], pool[j]] = [pool[j], pool[i]];
+    }
+    pool.slice(0, 6).forEach((topic) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'topic-chip';
+      b.textContent = topic;
+      b.addEventListener('click', () => {
+        storyTopicEl.value = storyTopicEl.value.trim().toLowerCase() === topic.toLowerCase() ? '' : topic;
+        syncTopicChipHighlight();
+      });
+      topicChipsEl.appendChild(b);
+    });
+    const shuffle = document.createElement('button');
+    shuffle.type = 'button';
+    shuffle.className = 'topic-shuffle';
+    shuffle.textContent = '\u21BB More ideas';
+    shuffle.addEventListener('click', () => { renderTopicChips(); syncTopicChipHighlight(); });
+    topicChipsEl.appendChild(shuffle);
+    syncTopicChipHighlight();
+  }
+  storyTopicEl.addEventListener('input', syncTopicChipHighlight);
+  renderTopicChips();
+
+  storyBtn.addEventListener('click', generateStory);
+  fillStoryLevels();
+  fillStoryLessons(1, null);
+
   function initAuth() {
     if (!supabaseClient) {
       loadHistory();
       loadFlashcards();
+      loadStoryProgress();
       return;
     }
     let lastUserId = undefined;
@@ -1407,6 +1838,7 @@
       lastUserId = newUserId;
       loadHistory();
       loadFlashcards();
+      loadStoryProgress();
       if (currentUser) offerLegacyImport();
     });
   }
@@ -2147,6 +2579,7 @@
       setFilterEl.innerHTML = '';
       flashcardsGridEl.innerHTML = '<div class="flashcards-empty">Save a translation to start a deck. Tap a card to flip it.</div>';
       quizBtn.disabled = true;
+      updateStoryIncluded();
       return;
     }
 
@@ -2277,12 +2710,29 @@
         openPracticeModal(card);
       });
 
+      const storyCheck = document.createElement('button');
+      storyCheck.className = 'flashcard-story-check' + (card.inStory ? ' checked' : '');
+      storyCheck.setAttribute('role', 'checkbox');
+      storyCheck.setAttribute('aria-checked', card.inStory ? 'true' : 'false');
+      storyCheck.setAttribute('aria-label', 'Include in reading practice story');
+      storyCheck.title = 'Include this word in a reading practice story';
+      storyCheck.innerHTML = '<svg viewBox="0 0 24 24" fill="none"><path d="M5 12.5l4.5 4.5L19 7.5" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+      storyCheck.addEventListener('click', (e) => {
+        e.stopPropagation();
+        card.inStory = !card.inStory;
+        storyCheck.classList.toggle('checked', card.inStory);
+        storyCheck.setAttribute('aria-checked', card.inStory ? 'true' : 'false');
+        persistFlashcards();
+        updateStoryIncluded();
+      });
+
       inner.appendChild(front);
       inner.appendChild(back);
       outer.appendChild(inner);
       outer.appendChild(tag);
       outer.appendChild(remove);
       outer.appendChild(exampleIconBtn);
+      outer.appendChild(storyCheck);
       outer.appendChild(practiceIconBtn);
 
       const cell = document.createElement('div');
@@ -2292,6 +2742,7 @@
     });
     flashcardsGridEl.innerHTML = '';
     flashcardsGridEl.appendChild(grid);
+    updateStoryIncluded();
   }
 
   clearFlashcardsBtn.addEventListener('click', async () => {
