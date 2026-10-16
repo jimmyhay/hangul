@@ -637,7 +637,8 @@
   .history-main {
     display: flex;
     align-items: baseline;
-    gap: 12px;
+    flex-wrap: wrap;
+    gap: 2px 12px;
     flex: 1;
     min-width: 0;
     cursor: pointer;
@@ -647,9 +648,14 @@
     font-weight: 600;
     font-size: 18px;
     color: var(--ink);
-    flex-shrink: 0;
+    flex-shrink: 1;
+    min-width: 0;
+    max-width: 100%;
+    overflow-wrap: anywhere;
   }
   .history-translation {
+    min-width: 0;
+    max-width: 100%;
     font-size: 13px;
     color: var(--stone);
     white-space: nowrap;
@@ -675,7 +681,19 @@
   .history-remove:hover { background: var(--seal); color: var(--card); }
   .history-remove svg { width: 13px; height: 13px; display: block; }
 
+  html, body { max-width: 100%; overflow-x: hidden; }
+  .app { min-width: 0; overflow-x: hidden; }
+  .band-top > * { min-width: 0; }
+  .brand, .brand-text { min-width: 0; }
+  .lang-select { max-width: 100%; text-overflow: ellipsis; }
+  .auth-row { flex-wrap: wrap; gap: 6px 10px; }
+  .auth-status { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1 1 0; }
+  .auth-btn { flex: 0 0 auto; }
+  img, svg { max-width: 100%; }
+  .story-output, .story-para, .story-para-en, .story-gram-ex, .result, .nuance, .example-ko, .example-other { overflow-wrap: anywhere; }
+
   @media (max-width: 420px) {
+    .lang-select { font-size: 16px; padding: 7px 28px 7px 12px; }
     .band { padding: 28px 18px 40px; }
     .card { margin: -24px 10px 0; padding: 26px 18px 20px; }
     .panel { margin: 16px 10px 0; padding: 20px 18px; }
@@ -887,18 +905,8 @@
   .topic-chip.active { background: var(--seal-tint); border-color: var(--seal); color: var(--seal); font-weight: 500; }
   .topic-shuffle { border: none; background: transparent; color: var(--stone); font-size: 12.5px; cursor: pointer; padding: 6px 8px; font-family: "Inter", sans-serif; }
   .topic-shuffle:hover { color: var(--seal); }
-  .flashcard-story-check {
-    position: absolute; bottom: 6px; left: 50%; transform: translateX(-50%);
-    width: 26px; height: 26px; border-radius: 8px; border: 1.5px solid var(--stone);
-    background: rgba(255,255,255,0.7); color: transparent; cursor: pointer; z-index: 2;
-    display: flex; align-items: center; justify-content: center; padding: 0;
-  }
-  .flashcard-story-check svg { width: 15px; height: 15px; display: block; }
-  .flashcard-story-check:hover { border-color: var(--seal); }
-  .flashcard-story-check.checked { background: var(--seal); border-color: var(--seal); color: var(--card); }
   .story-included { font-size: 13px; color: var(--ink-soft); margin-top: 12px; display: none; line-height: 1.5; }
   .story-included b { font-family: "Noto Sans KR", sans-serif; font-weight: 600; }
-  .story-included button { border: none; background: none; color: var(--seal); font-size: 12.5px; cursor: pointer; padding: 0 0 0 6px; font-family: "Inter", sans-serif; text-decoration: underline; }
   .story-locked { display: none; margin-top: 12px; font-size: 13px; color: var(--ink-soft); background: var(--paper); border-radius: 10px; padding: 10px 12px; line-height: 1.5; }
   .sentence-row { margin-bottom: 14px; }
   .sentence-num { display: inline-block; min-width: 26px; color: var(--stone); font-family: "Inter", sans-serif; font-size: 13px; }
@@ -1157,8 +1165,8 @@
   // Fill these in with your project's values from Supabase: Settings > Data API
   // (Project URL) and Settings > API Keys (the "anon" / "publishable" key -
   // NOT the service_role key, which must never appear in frontend code).
-  const SUPABASE_URL = 'https://wddplglfsjjwppvisuqs.supabase.co';
-  const SUPABASE_ANON_KEY = 'sb_publishable_sn2RLEVf74HS6TvyjSEmUA_SzaPKgqm';
+  const SUPABASE_URL = 'YOUR_SUPABASE_URL';
+  const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
 
   const supabaseClient = (window.supabase && SUPABASE_URL.indexOf('http') === 0)
     ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
@@ -1644,7 +1652,7 @@ const TTMIK_CURRICULUM = [["Hello, Thank you / 안녕하세요, 감사합니다"
     'a street musician and a stranger who keeps requesting the same song', 'a tiny coffee shop where every customer is a regular but one', 'a kid who is convinced the moon is following him'
   ];
 
-  function buildStorySystemPrompt(level, lesson, topic, mustUse, style, targets) {
+  function buildStorySystemPrompt(level, lesson, topic, style, targets, extraWords) {
     const g = collectGrammar(level, lesson);
     const bandWords = level <= 2 ? 'very basic everyday vocabulary (the kind in the first TTMIK levels)'
       : level <= 5 ? 'common everyday vocabulary suited to a beginner-intermediate learner'
@@ -1659,7 +1667,7 @@ const TTMIK_CURRICULUM = [["Hello, Thank you / 안녕하세요, 감사합니다"
       '3. Vocabulary: use ' + bandWords + '. Introduce ONLY 3 to 5 new vocabulary words (nouns, verbs or adjectives, not grammar) that a learner at this stage may not know yet, and make their meaning guessable from context. Repeat each new word at least twice.\n' +
       '4. STORY QUALITY (very important - the story must be genuinely fun to read, not a bland textbook dialogue): ' + (topic ? 'the topic is: ' + topic + '. ' : 'pick an original premise; for inspiration: ' + STORY_SEEDS[Math.floor(Math.random() * STORY_SEEDS.length)] + '. ') + (style && STORY_STYLE_GUIDE[style] ? 'Tell ' + STORY_STYLE_GUIDE[style] + '. ' : 'Choose whichever tone suits the premise best (humour, warmth, mystery or whimsy). ') + 'Give the main character a specific name (a Korean name) and a clear small want or problem. Include a little simple dialogue in quotation marks. Use concrete, specific details (a particular food, place, object, sound) instead of vague words. Build to a surprise, a joke or an emotional moment at the end. Everything must make logical sense: events follow from each other, and no random unrelated sentences. Avoid cliches such as "I went to the park and it was fun". Simple grammar is no excuse for a boring or confusing plot - short sentences can still be charming.\n' +
       '5. Write the Korean naturally with normal spacing and punctuation.\n' +
-      (mustUse && mustUse.length ? '6. The learner has chosen these saved vocabulary words and wants to practise them: ' + mustUse.join(', ') + '. Use EVERY one of them naturally in the story at least once (conjugated only with grammar from the known list). Do NOT list these words in newWords; newWords is only for the extra 3 to 5 words you introduce yourself.\n' : '') + '\n' +
+      (extraWords && extraWords.length ? '6. PRIORITY SAVED VOCABULARY: the learner has saved these words in their flashcard deck: ' + extraWords.join(', ') + '. Make a real effort to work in as many of them as you can (aim for at least half), in their dictionary or naturally conjugated form, because the learner wants to see their own words in context. BUT the story must still make complete sense and stay fun: if a word genuinely does not fit the plot, leave it out rather than forcing it. Do NOT list these words in newWords.\n' : '') +
       'Respond with ONLY a JSON object, no markdown fences, no preamble, in this exact shape: {"plan":"one or two English sentences: who the character is, what they want, what goes wrong, and how it ends","title":"Korean title","titleEn":"English title","paragraphs":[{"ko":"Korean paragraph","en":"natural English translation of that paragraph"}],"grammarChecklist":[{"point":"the required grammar point","sentence":"the exact Korean sentence from the story that uses it"}],"newWords":[{"word":"dictionary form of new word","meaning":"short English meaning"}],"grammarUsed":["short names of the main grammar points used, e.g. -고 싶어요"]}';
   }
 
@@ -1728,7 +1736,7 @@ const TTMIK_CURRICULUM = [["Hello, Thank you / 안녕하세요, 감사합니다"
           add.disabled = true;
           add.textContent = 'Saving…';
           try {
-            await saveStoryWordAsCard(w.word);
+            await saveStoryWordAsCard(w.word, w.meaning);
             add.textContent = 'Saved ✓';
           } catch (e) {
             add.disabled = false;
@@ -1777,6 +1785,7 @@ const TTMIK_CURRICULUM = [["Hello, Thank you / 안녕하세요, 감사합니다"
     const { level, lesson } = getStoryProgress();
     const topic = storyTopicEl.value.trim();
     const myId = ++storyRequestId;
+    const extraWords = getPriorityWords(15);
     storyBtn.disabled = true;
     setStoryStatus('Writing your story… this can take 10–20 seconds.');
     try {
@@ -1785,7 +1794,7 @@ const TTMIK_CURRICULUM = [["Hello, Thank you / 안녕하세요, 감사합니다"
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           max_tokens: 6000,
-          system: buildStorySystemPrompt(level, lesson, topic, getStoryCardWords().slice(0, 8), document.getElementById('storyStyle').value, pickStoryTargets(level, lesson)),
+          system: buildStorySystemPrompt(level, lesson, topic, document.getElementById('storyStyle').value, pickStoryTargets(level, lesson), extraWords),
           messages: [{ role: 'user', content: 'Write the story now. Learner progress: Level ' + level + ', Lesson ' + lesson + '.' }]
         })
       });
@@ -1798,6 +1807,7 @@ const TTMIK_CURRICULUM = [["Hello, Thank you / 안녕하세요, 감사합니다"
       const story = JSON.parse(cleaned);
       if (!story.paragraphs || !story.paragraphs.length) throw new Error('empty');
       renderStory(story, level, lesson);
+      recordStoryWordUse((story.paragraphs || []).map(x => x.ko || '').join(' '), extraWords);
       setStoryStatus('');
     } catch (e) {
       if (myId !== storyRequestId) return;
@@ -1808,13 +1818,13 @@ const TTMIK_CURRICULUM = [["Hello, Thank you / 안녕하세요, 감사합니다"
     }
   }
 
-  async function saveStoryWordAsCard(word) {
+  async function saveStoryWordAsCard(word, hintMeaning) {
     const response = await fetch('/api/claude', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        max_tokens: 200,
-        system: 'Give the English translation of the Korean word "' + word + '". Respond with ONLY a JSON object, no markdown fences: {"translation":"short English translation","romanization":"Revised Romanization"}.',
+        max_tokens: 900,
+        system: 'Give the English translation of the Korean word "' + word + '"' + (hintMeaning ? ' (in the story it means "' + hintMeaning + '")' : '') + '. Also provide a short 2-5 word ENGLISH stock-photo search phrase describing the precise, specific meaning (not a broad category); if it is a conjugated verb or adjective, describe the underlying concrete action or thing, not the grammar; use an empty string only if nothing is photographable. Also provide a simple SVG icon as a fallback: viewBox="0 0 200 200", minimal flat glyph style, at most 3-4 shapes, only colors #1B2438 and #A6321C, no gradients, no <text> elements, no <script> tags. Respond with ONLY a JSON object, no markdown fences, no preamble, in this exact shape: {"translation":"short English translation","romanization":"Revised Romanization","imageQuery":"short English stock-photo search phrase or empty string","illustrationSvg":"a complete self-contained <svg>...</svg> string"}.',
         messages: [{ role: 'user', content: word }]
       })
     });
@@ -1826,11 +1836,13 @@ const TTMIK_CURRICULUM = [["Hello, Thank you / 안녕하세요, 감사합니다"
     const t = parsedW.translation;
     const rom = parsedW.romanization;
     if (!t) throw new Error('no translation');
+    const imageUrl = parsedW.imageQuery ? await lookupImage(parsedW.imageQuery) : '';
+    const svg = typeof parsedW.illustrationSvg === 'string' && parsedW.illustrationSvg.trim().indexOf('<svg') === 0 ? parsedW.illustrationSvg : '';
     if (!flashcards.some(c => c.source === word)) {
       saveFlashcard({
         source: word,
         direction: 'ko-en',
-        result: { translation: t, romanization: rom || '', examples: [] }
+        result: { translation: t, romanization: rom || '', imageUrl: imageUrl || '', illustrationSvg: svg, examples: [] }
       }, 'Story words');
     }
   }
@@ -1847,37 +1859,48 @@ const TTMIK_CURRICULUM = [["Hello, Thank you / 안녕하세요, 감사합니다"
   const topicChipsEl = document.getElementById('topicChips');
   const storyIncludedEl = document.getElementById('storyIncluded');
 
-  function getStoryCardWords() {
-    const words = [];
+  function cardKoreanWord(c) {
+    const dir = String(c.direction || '');
+    if (dir.indexOf('ko-') === 0) return c.source;
+    if (/-ko$/.test(dir)) return c.translation;
+    return '';
+  }
+
+  // Every Korean word in the deck is a priority word. Words that have appeared in
+  // the fewest stories so far come first (random order within ties), so over time
+  // every saved word gets its turn.
+  function getPriorityWords(limit) {
+    const seen = {};
+    const cands = [];
     flashcards.forEach((c) => {
-      if (!c.inStory) return;
-      const dir = String(c.direction || '');
-      let w = '';
-      if (dir.indexOf('ko-') === 0) w = c.source;
-      else if (/-ko$/.test(dir)) w = c.translation;
-      if (w && words.indexOf(w) === -1) words.push(w);
+      const w = cardKoreanWord(c);
+      if (!w || seen[w]) return;
+      seen[w] = true;
+      cands.push({ w, uses: c.storyUses || 0, r: Math.random() });
     });
-    return words;
+    cands.sort((a, b) => (a.uses - b.uses) || (a.r - b.r));
+    return cands.slice(0, limit).map(x => x.w);
+  }
+
+  function recordStoryWordUse(text, words) {
+    let changed = false;
+    words.forEach((w) => {
+      const stem = w.length > 1 && /다$/.test(w) ? w.slice(0, -1) : w;
+      if (stem && text.indexOf(stem) !== -1) {
+        flashcards.forEach((c) => {
+          if (cardKoreanWord(c) === w) { c.storyUses = (c.storyUses || 0) + 1; changed = true; }
+        });
+      }
+    });
+    if (changed) persistFlashcards();
   }
 
   function updateStoryIncluded() {
-    const words = getStoryCardWords();
+    const count = flashcards.filter(c => cardKoreanWord(c)).length;
     storyIncludedEl.innerHTML = '';
-    if (!words.length) { storyIncludedEl.style.display = 'none'; return; }
+    if (!count) { storyIncludedEl.style.display = 'none'; return; }
     storyIncludedEl.style.display = 'block';
-    storyIncludedEl.appendChild(document.createTextNode('Including from your flashcards: '));
-    const b = document.createElement('b');
-    b.textContent = words.slice(0, 8).join(', ');
-    storyIncludedEl.appendChild(b);
-    if (words.length > 8) storyIncludedEl.appendChild(document.createTextNode(' (first 8 used)'));
-    const clear = document.createElement('button');
-    clear.textContent = 'Clear';
-    clear.addEventListener('click', () => {
-      flashcards.forEach(c => { c.inStory = false; });
-      persistFlashcards();
-      renderFlashcards();
-    });
-    storyIncludedEl.appendChild(clear);
+    storyIncludedEl.textContent = 'Your saved flashcard words are prioritised: up to 15 of them are worked into each story wherever they fit naturally.';
   }
 
 
@@ -1939,13 +1962,13 @@ const TTMIK_CURRICULUM = [["Hello, Thank you / 안녕하세요, 감사합니다"
     }
   }
 
-  function buildSentencesSystemPrompt(level, lesson, mustUse) {
+  function buildSentencesSystemPrompt(level, lesson, extraWords) {
     const g = collectGrammar(level, lesson);
     return 'You write graded example sentences in Korean for a beginner who is studying the Talk To Me In Korean (TTMIK) Core Grammar course. The learner has completed Level ' + level + ', up to Lesson ' + lesson + '.\n\n' +
       'GRAMMAR THEY KNOW (use ONLY these grammar points plus basic particles, nouns, verbs and adjectives):\n' + g.learned.join('\n') + '\n\n' +
       'GRAMMAR THEY HAVE NOT LEARNED YET - do NOT use any of these:\n' + g.upcoming.join('\n') + '\n\n' +
       'RULES:\n1. Write exactly 10 separate, natural, everyday example sentences. They do not need to form a story.\n2. Each should be short and useful, showing different known grammar points and different everyday situations (food, family, places, time, wants, likes). Vary the sentences; do not repeat the same pattern.\n3. Use very basic everyday vocabulary. Make each sentence sensible and something a real person would say.\n' +
-      (mustUse && mustUse.length ? '4. The learner wants to practise these saved words: ' + mustUse.join(', ') + '. Use each at least once across the 10 sentences (with known grammar only).\n' : '') +
+      (extraWords && extraWords.length ? '4. Try to use as many of the learner\'s saved words as you can across the sentences, but only where the sentence stays natural and correct: ' + extraWords.join(', ') + '.\n' : '') +
       '\nRespond with ONLY a JSON object, no markdown fences, no preamble, in this exact shape: {"sentences":[{"ko":"Korean sentence","en":"natural English translation"}],"grammarUsed":["short names of the grammar points used"]}';
   }
 
@@ -2005,6 +2028,7 @@ const TTMIK_CURRICULUM = [["Hello, Thank you / 안녕하세요, 감사합니다"
   async function generateSentences() {
     const { level, lesson } = getStoryProgress();
     const myId = ++storyRequestId;
+    const extraWords = getPriorityWords(15);
     storyBtn.disabled = true;
     setStoryStatus('Writing your sentences…');
     try {
@@ -2013,7 +2037,7 @@ const TTMIK_CURRICULUM = [["Hello, Thank you / 안녕하세요, 감사합니다"
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           max_tokens: 4000,
-          system: buildSentencesSystemPrompt(level, lesson, getStoryCardWords().slice(0, 8)),
+          system: buildSentencesSystemPrompt(level, lesson, extraWords),
           messages: [{ role: 'user', content: 'Write the 10 sentences now. Learner progress: Level ' + level + ', Lesson ' + lesson + '.' }]
         })
       });
@@ -2026,6 +2050,7 @@ const TTMIK_CURRICULUM = [["Hello, Thank you / 안녕하세요, 감사합니다"
       const parsed = JSON.parse(cleaned);
       if (!parsed.sentences || !parsed.sentences.length) throw new Error('empty');
       renderSentences(parsed);
+      recordStoryWordUse((parsed.sentences || []).map(x => x.ko || '').join(' '), extraWords);
       setStoryStatus('');
     } catch (e) {
       if (myId !== storyRequestId) return;
@@ -2929,29 +2954,12 @@ const TTMIK_CURRICULUM = [["Hello, Thank you / 안녕하세요, 감사합니다"
         openPracticeModal(card);
       });
 
-      const storyCheck = document.createElement('button');
-      storyCheck.className = 'flashcard-story-check' + (card.inStory ? ' checked' : '');
-      storyCheck.setAttribute('role', 'checkbox');
-      storyCheck.setAttribute('aria-checked', card.inStory ? 'true' : 'false');
-      storyCheck.setAttribute('aria-label', 'Include in reading practice story');
-      storyCheck.title = 'Include this word in a reading practice story';
-      storyCheck.innerHTML = '<svg viewBox="0 0 24 24" fill="none"><path d="M5 12.5l4.5 4.5L19 7.5" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-      storyCheck.addEventListener('click', (e) => {
-        e.stopPropagation();
-        card.inStory = !card.inStory;
-        storyCheck.classList.toggle('checked', card.inStory);
-        storyCheck.setAttribute('aria-checked', card.inStory ? 'true' : 'false');
-        persistFlashcards();
-        updateStoryIncluded();
-      });
-
       inner.appendChild(front);
       inner.appendChild(back);
       outer.appendChild(inner);
       outer.appendChild(tag);
       outer.appendChild(remove);
       outer.appendChild(exampleIconBtn);
-      outer.appendChild(storyCheck);
       outer.appendChild(practiceIconBtn);
 
       const cell = document.createElement('div');
