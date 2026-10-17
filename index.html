@@ -376,6 +376,9 @@
     font-size: 14px;
     margin-bottom: 2px;
   }
+  .word-gloss-popup { cursor: pointer; }
+  .word-gloss-more { margin-top: 6px; font-family: "Inter", sans-serif; font-size: 11.5px; color: var(--seal-soft); font-weight: 500; }
+  .word-gloss-popup:hover .word-gloss-more { text-decoration: underline; }
   .word-gloss-body {
     font-family: "Inter", sans-serif;
     font-size: 12.5px;
@@ -887,7 +890,7 @@
     padding: 6px 14px; border-radius: 100px; cursor: pointer; font-family: "Inter", sans-serif;
   }
   .story-link-btn:hover { border-color: var(--seal-soft); color: var(--seal); }
-  .story-newwords { margin-top: 18px; background: var(--seal-tint); border-radius: 12px; padding: 14px 16px; }
+  .story-newwords { margin: 0 0 18px; background: var(--seal-tint); border-radius: 12px; padding: 14px 16px; }
   .story-newwords h4 { margin: 0 0 8px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--seal); font-weight: 600; }
   .story-nw { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 5px 0; font-size: 14px; }
   .story-nw b { font-family: "Noto Sans KR", sans-serif; font-weight: 600; font-size: 16px; }
@@ -917,6 +920,16 @@
   .story-gram-row:first-of-type { border-top: none; }
   .story-gram-point { font-size: 12.5px; color: var(--seal); font-weight: 500; }
   .story-gram-ex { font-family: "Noto Sans KR", sans-serif; font-size: 14.5px; color: var(--ink); margin-top: 2px; line-height: 1.5; }
+  .format-tabs { display: flex; gap: 6px; background: var(--paper); border-radius: 100px; padding: 4px; }
+  .format-tab { flex: 1 1 0; min-width: 0; border: none; background: transparent; color: var(--ink-soft); font-family: "Inter", sans-serif; font-size: 13.5px; padding: 8px 6px; border-radius: 100px; cursor: pointer; }
+  .format-tab.active { background: var(--seal); color: var(--card); font-weight: 500; }
+  .convo-line { display: flex; flex-direction: column; margin: 0 0 12px; max-width: 88%; }
+  .convo-line.right { margin-left: auto; align-items: flex-end; }
+  .convo-speaker { font-size: 11.5px; font-weight: 600; color: var(--stone); margin: 0 6px 3px; font-family: "Noto Sans KR", "Inter", sans-serif; }
+  .convo-bubble { background: var(--paper); border-radius: 16px 16px 16px 4px; padding: 9px 14px; font-family: "Noto Sans KR", sans-serif; font-size: 17px; line-height: 1.7; color: var(--ink); overflow-wrap: anywhere; }
+  .convo-line.right .convo-bubble { background: var(--seal-tint); border-radius: 16px 16px 4px 16px; }
+  .convo-en { display: none; font-size: 13px; color: var(--ink-soft); margin: 4px 6px 0; line-height: 1.5; overflow-wrap: anywhere; }
+  .story-output.show-en .convo-en { display: block; }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -996,7 +1009,7 @@
 
   <div class="panel story-panel" id="storyPanel">
     <div class="story-head"><span class="label">Reading practice</span></div>
-    <p class="story-sub" id="storySub">Set how far you are in Talk To Me In Korean's Core Grammar course and get a short story that only uses grammar you've already learned, with a few new words to stretch you.</p>
+    <p class="story-sub" id="storySub">Set how far you are in Talk To Me In Korean's Core Grammar course and get a short story, conversation or description of Korea that only uses grammar you've already learned, with a few new words to stretch you.</p>
     <div class="story-controls">
       <div class="story-field">
         <label for="storyLevel">Level</label>
@@ -1005,6 +1018,14 @@
       <div class="story-field">
         <label for="storyLesson">Completed up to</label>
         <select id="storyLesson"></select>
+      </div>
+      <div class="story-field story-field-wide" id="storyFormatField">
+        <label>What would you like to read?</label>
+        <div class="format-tabs" id="storyFormatTabs" role="tablist">
+          <button type="button" class="format-tab active" data-format="story" role="tab">Story</button>
+          <button type="button" class="format-tab" data-format="conversation" role="tab">Conversation</button>
+          <button type="button" class="format-tab" data-format="description" role="tab">About Korea</button>
+        </div>
       </div>
       <div class="story-field story-field-wide" id="storyStyleField">
         <label for="storyStyle">Style</label>
@@ -1165,8 +1186,8 @@
   // Fill these in with your project's values from Supabase: Settings > Data API
   // (Project URL) and Settings > API Keys (the "anon" / "publishable" key -
   // NOT the service_role key, which must never appear in frontend code).
-  const SUPABASE_URL = 'https://wddplglfsjjwppvisuqs.supabase.co';
-  const SUPABASE_ANON_KEY = 'sb_publishable_sn2RLEVf74HS6TvyjSEmUA_SzaPKgqm';
+  const SUPABASE_URL = 'YOUR_SUPABASE_URL';
+  const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
 
   const supabaseClient = (window.supabase && SUPABASE_URL.indexOf('http') === 0)
     ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
@@ -1652,23 +1673,27 @@ const TTMIK_CURRICULUM = [["Hello, Thank you / 안녕하세요, 감사합니다"
     'a street musician and a stranger who keeps requesting the same song', 'a tiny coffee shop where every customer is a regular but one', 'a kid who is convinced the moon is following him'
   ];
 
-  function buildStorySystemPrompt(level, lesson, topic, style, targets, extraWords) {
+  function buildStorySystemPrompt(level, lesson, topic, style, targets, extraWords, format) {
     const g = collectGrammar(level, lesson);
+    const fmt = format || 'story';
+    const fmtPlural = fmt === 'conversation' ? 'conversations' : fmt === 'description' ? 'descriptions' : 'stories';
     const bandWords = level <= 2 ? 'very basic everyday vocabulary (the kind in the first TTMIK levels)'
       : level <= 5 ? 'common everyday vocabulary suited to a beginner-intermediate learner'
       : 'a broader vocabulary suited to an intermediate learner';
-    return 'You write short graded-reader stories in Korean for a learner studying the Talk To Me In Korean (TTMIK) Core Grammar course. The learner has completed Level ' + level + ', up to Lesson ' + lesson + (lesson === 0 ? ' (i.e. nothing yet in Level ' + level + ', only Levels 1 to ' + (level - 1) + ')' : '') + '.\n\n' +
+    return 'You write short graded-reader ' + fmtPlural + ' in Korean for a learner studying the Talk To Me In Korean (TTMIK) Core Grammar course. The learner has completed Level ' + level + ', up to Lesson ' + lesson + (lesson === 0 ? ' (i.e. nothing yet in Level ' + level + ', only Levels 1 to ' + (level - 1) + ')' : '') + '.\n\n' +
       'GRAMMAR THEY KNOW (you may ONLY use these grammar points, plus basic particles, plain nouns, verbs and adjectives conjugated in forms covered below):\n' + g.learned.join('\n') + '\n\n' +
       'GRAMMAR THEY HAVE NOT LEARNED YET - do NOT use any of these patterns or endings, or any other advanced grammar not in the known list:\n' + g.upcoming.join('\n') + '\n\n' +
       'STRICT RULES:\n' +
-      '1. Length: about 250 Korean words (roughly 15 to 25 short sentences), split into 3 to 5 short paragraphs.\n' +
+      '1. Length: ' + (fmt === 'conversation' ? 'about 250 Korean words, written as a dialogue of 20 to 30 short lines between exactly two speakers' : 'about 250 Korean words (roughly 15 to 25 short sentences), split into 3 to 5 short paragraphs') + '.\n' +
       '2. Grammar: stay inside the known grammar list. Prefer polite -아/어요 style endings unless the known list covers something else. Keep sentences short and clear. Avoid connecting patterns, endings, quotation forms, honorifics, causatives, passives or expressions that are not in the known list.\n' +
       (targets && targets.length ? '2b. REQUIRED GRAMMAR SHOWCASE (very important): the story must actively use EACH of the following known grammar points at least once, correctly and naturally, so the learner gets to practise their current level and recent levels. Do not just use the easiest patterns. Required points:\n' + targets.map(t => '- ' + t.title + ' [' + t.tag + ']').join('\n') + '\nWork them into the plot (for example by planning which sentence will use which point before writing). A story that skips these points is a failure.\n' : '') +
       '3. Vocabulary: use ' + bandWords + '. Introduce ONLY 3 to 5 new vocabulary words (nouns, verbs or adjectives, not grammar) that a learner at this stage may not know yet, and make their meaning guessable from context. Repeat each new word at least twice.\n' +
-      '4. STORY QUALITY (very important - the story must be genuinely fun to read, not a bland textbook dialogue): ' + (topic ? 'the topic is: ' + topic + '. ' : 'pick an original premise; for inspiration: ' + STORY_SEEDS[Math.floor(Math.random() * STORY_SEEDS.length)] + '. ') + (style && STORY_STYLE_GUIDE[style] ? 'Tell ' + STORY_STYLE_GUIDE[style] + '. ' : 'Choose whichever tone suits the premise best (humour, warmth, mystery or whimsy). ') + 'Give the main character a specific name (a Korean name) and a clear small want or problem. Include a little simple dialogue in quotation marks. Use concrete, specific details (a particular food, place, object, sound) instead of vague words. Build to a surprise, a joke or an emotional moment at the end. Everything must make logical sense: events follow from each other, and no random unrelated sentences. Avoid cliches such as "I went to the park and it was fun". Simple grammar is no excuse for a boring or confusing plot - short sentences can still be charming.\n' +
+      (fmt === 'conversation' ? '4. CONVERSATION QUALITY (very important - it must feel like a real, entertaining chat, not a textbook dialogue): ' + (topic ? 'the situation is: ' + topic + '. ' : 'pick an original, specific everyday situation. ') + 'Two speakers with distinct Korean first names and distinct personalities (e.g. one curious, one teasing). They must have a clear reason to be talking and something at stake or something funny going on. Natural back-and-forth: they react to each other, ask questions, disagree a little, joke. Keep each line short (one or two sentences). ' + (style && STORY_STYLE_GUIDE[style] ? 'Tone: ' + STORY_STYLE_GUIDE[style] + '. ' : '') + 'End on a punchline, a decision or a warm moment. Everything must make logical sense. Avoid cliches like "Hello, how are you? I am fine, thank you."\n' : fmt === 'description' ? '4. DESCRIPTION QUALITY (very important): write an engaging, informative description of something to do with Korea (' + (topic ? 'the subject is: ' + topic : 'pick one specific subject such as a food, a place, a tradition, a holiday, a custom or a part of daily life in Korea') + '). Use ONLY well-known, accurate facts - never invent statistics, dates, prices or names you are not sure of. Use vivid, concrete, sensory details and one or two surprising or interesting facts so the reader learns something. Structure: a hook opening, two or three details, and a closing thought. Write as plain narration (you may address the reader as 당신 or use 우리 sparingly), not as a story with characters.\n' :       '4. STORY QUALITY (very important - the story must be genuinely fun to read, not a bland textbook dialogue): ' + (topic ? 'the topic is: ' + topic + '. ' : 'pick an original premise; for inspiration: ' + STORY_SEEDS[Math.floor(Math.random() * STORY_SEEDS.length)] + '. ') + (style && STORY_STYLE_GUIDE[style] ? 'Tell ' + STORY_STYLE_GUIDE[style] + '. ' : 'Choose whichever tone suits the premise best (humour, warmth, mystery or whimsy). ') + 'Give the main character a specific name (a Korean name) and a clear small want or problem. Include a little simple dialogue in quotation marks. Use concrete, specific details (a particular food, place, object, sound) instead of vague words. Build to a surprise, a joke or an emotional moment at the end. Everything must make logical sense: events follow from each other, and no random unrelated sentences. Avoid cliches such as "I went to the park and it was fun". Simple grammar is no excuse for a boring or confusing plot - short sentences can still be charming.\n') +
       '5. Write the Korean naturally with normal spacing and punctuation.\n' +
       (extraWords && extraWords.length ? '6. PRIORITY SAVED VOCABULARY: the learner has saved these words in their flashcard deck: ' + extraWords.join(', ') + '. Make a real effort to work in as many of them as you can (aim for at least half), in their dictionary or naturally conjugated form, because the learner wants to see their own words in context. BUT the story must still make complete sense and stay fun: if a word genuinely does not fit the plot, leave it out rather than forcing it. Do NOT list these words in newWords.\n' : '') +
-      'Respond with ONLY a JSON object, no markdown fences, no preamble, in this exact shape: {"plan":"one or two English sentences: who the character is, what they want, what goes wrong, and how it ends","title":"Korean title","titleEn":"English title","paragraphs":[{"ko":"Korean paragraph","en":"natural English translation of that paragraph"}],"grammarChecklist":[{"point":"the required grammar point","sentence":"the exact Korean sentence from the story that uses it"}],"newWords":[{"word":"dictionary form of new word","meaning":"short English meaning"}],"grammarUsed":["short names of the main grammar points used, e.g. -고 싶어요"]}';
+      (fmt === 'conversation'
+        ? 'Respond with ONLY a JSON object, no markdown fences, no preamble, in this exact shape: {"plan":"one or two English sentences: who the two speakers are, why they are talking, and how it ends","title":"Korean title","titleEn":"English title","speakers":["Korean name of speaker 1","Korean name of speaker 2"],"lines":[{"speaker":"exactly one of the two speaker names","ko":"Korean line","en":"natural English translation of that line"}],"grammarChecklist":[{"point":"the required grammar point","sentence":"the exact Korean line from the conversation that uses it"}],"newWords":[{"word":"dictionary form of new word","meaning":"short English meaning"}]}'
+        : 'Respond with ONLY a JSON object, no markdown fences, no preamble, in this exact shape: {"plan":"' + (fmt === 'description' ? 'one or two English sentences: the subject and the main points you will cover' : 'one or two English sentences: who the character is, what they want, what goes wrong, and how it ends') + '","title":"Korean title","titleEn":"English title","paragraphs":[{"ko":"Korean paragraph","en":"natural English translation of that paragraph"}],"grammarChecklist":[{"point":"the required grammar point","sentence":"the exact Korean sentence from the text that uses it"}],"newWords":[{"word":"dictionary form of new word","meaning":"short English meaning"}],"grammarUsed":["short names of the main grammar points used, e.g. -고 싶어요"]}');
   }
 
   function setStoryStatus(msg, isError) {
@@ -1689,39 +1714,12 @@ const TTMIK_CURRICULUM = [["Hello, Thank you / 안녕하세요, 감사합니다"
     titleEn.textContent = story.titleEn || '';
     storyOutput.appendChild(titleEn);
 
-    (story.paragraphs || []).forEach((para) => {
-      const ko = document.createElement('p');
-      ko.className = 'story-para';
-      ko.appendChild(makeClickableText(para.ko || '', para.ko || '', 'English'));
-      storyOutput.appendChild(ko);
-      const en = document.createElement('p');
-      en.className = 'story-para-en';
-      en.textContent = para.en || '';
-      storyOutput.appendChild(en);
-    });
-
-    const actions = document.createElement('div');
-    actions.className = 'story-actions';
-    const toggle = document.createElement('button');
-    toggle.className = 'story-link-btn';
-    toggle.textContent = 'Show English translation';
-    toggle.addEventListener('click', () => {
-      const on = storyOutput.classList.toggle('show-en');
-      toggle.textContent = on ? 'Hide English translation' : 'Show English translation';
-    });
-    actions.appendChild(toggle);
-    const hint = document.createElement('span');
-    hint.style.cssText = 'font-size:12px;color:var(--stone);align-self:center;';
-    hint.textContent = 'Tap any word for a quick gloss.';
-    actions.appendChild(hint);
-    storyOutput.appendChild(actions);
-
     const words = (story.newWords || []).filter(w => w && w.word);
     if (words.length) {
       const box = document.createElement('div');
       box.className = 'story-newwords';
       const h = document.createElement('h4');
-      h.textContent = 'New words';
+      h.textContent = 'New words in this story';
       box.appendChild(h);
       words.forEach((w) => {
         const row = document.createElement('div');
@@ -1750,6 +1748,58 @@ const TTMIK_CURRICULUM = [["Hello, Thank you / 안녕하세요, 감사합니다"
       });
       storyOutput.appendChild(box);
     }
+
+    if (story.lines && story.lines.length) {
+      const names = (story.speakers && story.speakers.length ? story.speakers : []).slice();
+      story.lines.forEach((ln) => {
+        if (ln.speaker && names.indexOf(ln.speaker) === -1) names.push(ln.speaker);
+      });
+      story.lines.forEach((ln) => {
+        const row = document.createElement('div');
+        row.className = 'convo-line' + (names.indexOf(ln.speaker) === 1 ? ' right' : '');
+        const who = document.createElement('div');
+        who.className = 'convo-speaker';
+        who.textContent = ln.speaker || '';
+        const bubble = document.createElement('div');
+        bubble.className = 'convo-bubble';
+        bubble.appendChild(makeClickableText(ln.ko || '', ln.ko || '', 'English'));
+        const en = document.createElement('div');
+        en.className = 'convo-en';
+        en.textContent = ln.en || '';
+        row.appendChild(who);
+        row.appendChild(bubble);
+        row.appendChild(en);
+        storyOutput.appendChild(row);
+      });
+    } else {
+      (story.paragraphs || []).forEach((para) => {
+        const ko = document.createElement('p');
+        ko.className = 'story-para';
+        ko.appendChild(makeClickableText(para.ko || '', para.ko || '', 'English'));
+        storyOutput.appendChild(ko);
+        const en = document.createElement('p');
+        en.className = 'story-para-en';
+        en.textContent = para.en || '';
+        storyOutput.appendChild(en);
+      });
+    }
+
+    const actions = document.createElement('div');
+    actions.className = 'story-actions';
+    const toggle = document.createElement('button');
+    toggle.className = 'story-link-btn';
+    toggle.textContent = 'Show English translation';
+    toggle.addEventListener('click', () => {
+      const on = storyOutput.classList.toggle('show-en');
+      toggle.textContent = on ? 'Hide English translation' : 'Show English translation';
+    });
+    actions.appendChild(toggle);
+    const hint = document.createElement('span');
+    hint.style.cssText = 'font-size:12px;color:var(--stone);align-self:center;';
+    hint.textContent = 'Tap any word for a quick gloss.';
+    actions.appendChild(hint);
+    storyOutput.appendChild(actions);
+
 
     const checklist = (story.grammarChecklist || []).filter(c => c && c.point && c.sentence);
     if (checklist.length) {
@@ -1787,15 +1837,15 @@ const TTMIK_CURRICULUM = [["Hello, Thank you / 안녕하세요, 감사합니다"
     const myId = ++storyRequestId;
     const extraWords = getPriorityWords(15);
     storyBtn.disabled = true;
-    setStoryStatus('Writing your story… this can take 10–20 seconds.');
+    setStoryStatus(STORY_FORMAT_META[storyFormat].busy + '… this can take 10–20 seconds.');
     try {
       const response = await fetch('/api/claude', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           max_tokens: 6000,
-          system: buildStorySystemPrompt(level, lesson, topic, document.getElementById('storyStyle').value, pickStoryTargets(level, lesson), extraWords),
-          messages: [{ role: 'user', content: 'Write the story now. Learner progress: Level ' + level + ', Lesson ' + lesson + '.' }]
+          system: buildStorySystemPrompt(level, lesson, topic, (storyFormat === 'story' ? document.getElementById('storyStyle').value : ''), pickStoryTargets(level, lesson), extraWords, storyFormat),
+          messages: [{ role: 'user', content: 'Write the ' + storyFormat + ' now. Learner progress: Level ' + level + ', Lesson ' + lesson + '.' }]
         })
       });
       const data = await response.json();
@@ -1805,9 +1855,10 @@ const TTMIK_CURRICULUM = [["Hello, Thank you / 안녕하세요, 감사합니다"
       const raw = textBlocks.length ? textBlocks[textBlocks.length - 1].text.trim() : '';
       const cleaned = raw.replace(/^```json/i, '').replace(/^```/, '').replace(/```$/, '').trim();
       const story = JSON.parse(cleaned);
-      if (!story.paragraphs || !story.paragraphs.length) throw new Error('empty');
+      const isConvo = storyFormat === 'conversation';
+      if (isConvo ? (!story.lines || !story.lines.length) : (!story.paragraphs || !story.paragraphs.length)) throw new Error('empty');
       renderStory(story, level, lesson);
-      recordStoryWordUse((story.paragraphs || []).map(x => x.ko || '').join(' '), extraWords);
+      recordStoryWordUse((isConvo ? story.lines : story.paragraphs).map(x => x.ko || '').join(' '), extraWords);
       setStoryStatus('');
     } catch (e) {
       if (myId !== storyRequestId) return;
@@ -1848,6 +1899,24 @@ const TTMIK_CURRICULUM = [["Hello, Thank you / 안녕하세요, 감사합니다"
   }
 
 
+  const CONVO_TOPIC_IDEAS = [
+    'Ordering at a busy cafe', 'Asking a stranger for directions', 'Two friends deciding what to eat', 'Returning a wrong order',
+    'Planning a weekend trip together', 'A phone call to book a restaurant', 'Meeting your partner\'s parents', 'Arguing about whose turn it is to cook',
+    'Shopping for a gift', 'Two coworkers at a company dinner', 'A taxi driver and a passenger', 'Siblings sharing a tiny room',
+    'A lost wallet at the subway station', 'Talking about the weather and plans', 'A teacher and a shy student', 'Bargaining at a market'
+  ];
+  const KOREA_TOPIC_IDEAS = [
+    'Kimchi and why Koreans love it', 'Hanbok, the traditional clothes', 'The Seoul subway system', 'Jeju Island',
+    'Seollal (Korean New Year)', 'Chuseok, the harvest holiday', 'Korean convenience stores', 'A jjimjilbang (Korean spa)',
+    'Hangul, the Korean alphabet', 'Street food at a night market', 'Hanok traditional houses', 'Picnics by the Han River',
+    'Bibimbap', 'Korean school life', 'The four seasons in Korea', 'Delivery culture in Korea', 'Temple stays in the mountains', 'Tteokbokki and pojangmacha'
+  ];
+  const STORY_FORMAT_META = {
+    story: { btn: 'Write me a story', busy: 'Writing your story', placeholder: 'Type your own idea, or pick one below', label: 'Topic (optional)' },
+    conversation: { btn: 'Write me a conversation', busy: 'Writing your conversation', placeholder: 'Type a situation, or pick one below', label: 'Situation (optional)' },
+    description: { btn: 'Write me a description', busy: 'Writing your description', placeholder: 'Pick something about Korea, or type your own', label: 'Pick a subject (optional)' }
+  };
+  let storyFormat = 'story';
   const STORY_TOPIC_IDEAS = [
     'A trip to the market', 'Ordering at a cafe', 'A rainy day at home', 'Meeting a new friend',
     'Lost in the city', 'A birthday surprise', 'Cooking dinner for family', 'A day at the beach',
@@ -1913,7 +1982,7 @@ const TTMIK_CURRICULUM = [["Hello, Thank you / 안녕하세요, 감사합니다"
 
   function renderTopicChips() {
     topicChipsEl.innerHTML = '';
-    const pool = STORY_TOPIC_IDEAS.slice();
+    const pool = (storyFormat === 'conversation' ? CONVO_TOPIC_IDEAS : storyFormat === 'description' ? KOREA_TOPIC_IDEAS : STORY_TOPIC_IDEAS).slice();
     for (let i = pool.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [pool[i], pool[j]] = [pool[j], pool[i]];
@@ -1948,13 +2017,17 @@ const TTMIK_CURRICULUM = [["Hello, Thank you / 안녕하세요, 감사합니다"
 
   function updateStoryMode() {
     const unlocked = isStoryUnlocked();
-    document.getElementById('storyStyleField').style.display = unlocked ? '' : 'none';
+    document.getElementById('storyFormatField').style.display = unlocked ? '' : 'none';
+    document.getElementById('storyStyleField').style.display = unlocked && storyFormat === 'story' ? '' : 'none';
+    storyTopicEl.style.display = storyFormat === 'description' ? 'none' : '';
     document.getElementById('storyTopicField').style.display = unlocked ? '' : 'none';
-    storyBtn.textContent = unlocked ? 'Write me a story' : 'Create 10 example sentences';
+    storyBtn.textContent = unlocked ? STORY_FORMAT_META[storyFormat].btn : 'Create 10 example sentences';
+    storyTopicEl.placeholder = STORY_FORMAT_META[storyFormat].placeholder;
+    document.querySelector('label[for="storyTopic"]').textContent = STORY_FORMAT_META[storyFormat].label;
     const locked = document.getElementById('storyLocked');
     if (unlocked) {
       locked.style.display = 'none';
-      document.getElementById('storySub').textContent = "Set how far you are in Talk To Me In Korean's Core Grammar course and get a short story that only uses grammar you've already learned, with a few new words to stretch you.";
+      document.getElementById('storySub').textContent = "Set how far you are in Talk To Me In Korean's Core Grammar course and get a short story, conversation or description of Korea that only uses grammar you've already learned, with a few new words to stretch you.";
     } else {
       locked.style.display = 'block';
       locked.textContent = 'Stories unlock at Level 2. With only Level 1 grammar a story would be too limited to make sense, so for now you can generate 10 example sentences using what you know.';
@@ -2060,6 +2133,16 @@ const TTMIK_CURRICULUM = [["Hello, Thank you / 안녕하세요, 감사합니다"
       if (myId === storyRequestId) storyBtn.disabled = false;
     }
   }
+
+  document.getElementById('storyFormatTabs').addEventListener('click', (e) => {
+    const btn = e.target.closest('.format-tab');
+    if (!btn) return;
+    storyFormat = btn.getAttribute('data-format');
+    document.querySelectorAll('.format-tab').forEach(t => t.classList.toggle('active', t === btn));
+    storyTopicEl.value = '';
+    renderTopicChips();
+    updateStoryMode();
+  });
 
   storyBtn.addEventListener('click', () => { if (isStoryUnlocked()) generateStory(); else generateSentences(); });
   updateStoryMode();
@@ -2192,6 +2275,21 @@ const TTMIK_CURRICULUM = [["Hello, Thank you / 안녕하세요, 감사합니다"
     if (e.key === 'Escape') closeGlossPopup();
   }
 
+  function openFullTranslation(rawWord) {
+    const word = rawWord.replace(/^[\s"'\u201C\u201D\u2018\u2019()\[\]{}.,!?;:\u2026~\-]+|[\s"'\u201C\u201D\u2018\u2019()\[\]{}.,!?;:\u2026~\-]+$/g, '') || rawWord;
+    closeGlossPopup();
+    // A Korean word needs a Korean language pair, whatever pair is currently selected.
+    if (/[\uAC00-\uD7A3]/.test(word) && getCurrentPair().a !== 'ko' && getCurrentPair().b !== 'ko') {
+      langSelect.value = 'ko-en';
+      langSelect.dispatchEvent(new Event('change'));
+    }
+    input.value = word;
+    autoResize();
+    translateBtn.disabled = false;
+    translate(word);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
   async function showWordGloss(word, sentence, anchorEl, targetLangName) {
     closeGlossPopup();
 
@@ -2199,7 +2297,12 @@ const TTMIK_CURRICULUM = [["Hello, Thank you / 안녕하세요, 감사합니다"
     popup.className = 'word-gloss-popup';
     popup.innerHTML =
       '<div class="word-gloss-term">' + word.replace(/</g, '&lt;') + '</div>' +
-      '<div class="word-gloss-body">Looking up…</div>';
+      '<div class="word-gloss-body">Looking up…</div>' +
+      '<div class="word-gloss-more">Full translation \u2192</div>';
+    popup.addEventListener('click', (e) => {
+      e.stopPropagation();
+      openFullTranslation(word);
+    });
     document.body.appendChild(popup);
     glossPopupEl = popup;
 
