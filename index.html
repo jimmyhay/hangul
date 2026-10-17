@@ -2337,7 +2337,10 @@ const TTMIK_CURRICULUM = [["Hello, Thank you / 안녕하세요, 감사합니다"
     box.appendChild(pr);
     const meta = el('div', 'write-meta');
     if (item.grammar) meta.appendChild(el('span', 'write-chip', 'Try using: ' + item.grammar));
-    (item.hints || []).forEach(h => { if (h && h.ko) meta.appendChild(el('span', 'write-chip soft', h.ko + (h.en ? ' = ' + h.en : ''))); });
+    const hintWords = (item.hints || []).filter(h => h && h.ko);
+    if (hintWords.length && (item.showHint || st.fb)) {
+      hintWords.forEach(h => meta.appendChild(el('span', 'write-chip soft', h.ko + (h.en ? ' = ' + h.en : ''))));
+    }
     box.appendChild(meta);
 
     const ta = el('textarea', 'write-input');
@@ -2353,6 +2356,11 @@ const TTMIK_CURRICULUM = [["Hello, Thank you / 안녕하세요, 감사합니다"
       chk.disabled = st.checking;
       chk.addEventListener('click', () => checkWriteSentence(ta.value));
       actions.appendChild(chk);
+      if (hintWords.length && !item.showHint) {
+        const hb = el('button', 'story-link-btn', '\uD83D\uDCA1 Hint');
+        hb.addEventListener('click', () => { st.draft = ta.value; item.showHint = true; renderWrite(); });
+        actions.appendChild(hb);
+      }
     } else {
       const next = el('button', 'story-btn', st.idx + 1 >= st.items.length ? 'Finish' : 'Next sentence');
       next.addEventListener('click', () => { st.idx++; st.fb = null; st.draft = ''; renderWrite(); });
