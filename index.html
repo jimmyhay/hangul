@@ -930,6 +930,39 @@
   .convo-line.right .convo-bubble { background: var(--seal-tint); border-radius: 16px 16px 4px 16px; }
   .convo-en { display: none; font-size: 13px; color: var(--ink-soft); margin: 4px 6px 0; line-height: 1.5; overflow-wrap: anywhere; }
   .story-output.show-en .convo-en { display: block; }
+  .mode-tabs { margin: 10px 0 16px; }
+  .format-tab.disabled { opacity: 0.45; }
+  #writeTypeTabs { margin-top: 4px; }
+  .write-card { margin-top: 16px; }
+  .write-prompt { background: var(--paper); border-radius: 12px; padding: 14px 16px; margin-bottom: 12px; }
+  .write-prompt .wp-label { font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--stone); font-weight: 600; margin-bottom: 4px; }
+  .write-prompt .wp-text { font-size: 17px; color: var(--ink); line-height: 1.5; overflow-wrap: anywhere; }
+  .write-meta { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 12px; }
+  .write-chip { font-size: 12.5px; background: var(--seal-tint); color: var(--seal); border-radius: 100px; padding: 4px 11px; font-family: "Inter", "Noto Sans KR", sans-serif; }
+  .write-chip.soft { background: var(--paper); color: var(--ink-soft); }
+  textarea.write-input { width: 100%; min-height: 84px; resize: vertical; font-family: "Noto Sans KR", "Inter", sans-serif; font-size: 16px; line-height: 1.6; color: var(--ink); background: var(--card); border: 1px solid var(--stone-light); border-radius: 12px; padding: 11px 13px; }
+  textarea.write-input:focus { outline: none; border-color: var(--seal-soft); }
+  .write-actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 10px; }
+  .write-progress { font-size: 12.5px; color: var(--stone); margin-bottom: 8px; }
+  .write-fb { border-radius: 12px; padding: 14px 16px; margin-top: 14px; background: var(--paper); font-size: 14.5px; line-height: 1.6; color: var(--ink); }
+  .write-fb.ok { background: var(--success-tint); }
+  .write-fb.almost { background: var(--seal-tint); }
+  .write-fb h4 { margin: 0 0 6px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--stone); font-weight: 600; }
+  .write-fb .verdict { font-weight: 600; margin-bottom: 6px; }
+  .write-fb .block { margin-top: 10px; overflow-wrap: anywhere; }
+  .write-fb .mistake { padding: 6px 0; border-top: 1px solid rgba(0,0,0,0.08); }
+  .write-fb .mistake:first-of-type { border-top: none; }
+  .write-fb .arrow { color: var(--stone); padding: 0 4px; }
+  .write-fb .wrong { text-decoration: line-through; color: var(--seal); }
+  .write-fb ul { margin: 4px 0 0; padding-left: 18px; }
+  .chat-box { margin-top: 14px; }
+  .chat-fb { font-size: 12.5px; color: var(--ink-soft); margin: 4px 6px 0; line-height: 1.5; overflow-wrap: anywhere; }
+  .chat-fb.ok { color: var(--success); }
+  .chat-en-toggle { border: none; background: none; color: var(--stone); font-size: 12px; cursor: pointer; padding: 2px 6px; font-family: "Inter", sans-serif; text-decoration: underline; align-self: flex-start; }
+  .convo-line.right .chat-en-toggle { align-self: flex-end; }
+  .chat-input-row { display: flex; gap: 8px; align-items: flex-end; margin-top: 12px; }
+  .chat-input-row textarea { flex: 1; min-height: 46px; max-height: 120px; }
+  .write-hint { background: var(--paper); border: 1px dashed var(--stone-light); border-radius: 12px; padding: 10px 13px; margin-top: 10px; font-size: 14px; }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -1008,8 +1041,11 @@
   </div>
 
   <div class="panel story-panel" id="storyPanel">
-    <div class="story-head"><span class="label">Reading practice</span></div>
-    <p class="story-sub" id="storySub">Set how far you are in Talk To Me In Korean's Core Grammar course and get a short story, conversation or description of Korea that only uses grammar you've already learned, with a few new words to stretch you.</p>
+    <div class="story-head"><span class="label">Practice</span></div>
+    <div class="format-tabs mode-tabs" id="practiceModeTabs" role="tablist">
+      <button type="button" class="format-tab active" data-mode="reading" role="tab">Reading</button>
+      <button type="button" class="format-tab" data-mode="writing" role="tab">Writing</button>
+    </div>
     <div class="story-controls">
       <div class="story-field">
         <label for="storyLevel">Level</label>
@@ -1019,6 +1055,10 @@
         <label for="storyLesson">Completed up to</label>
         <select id="storyLesson"></select>
       </div>
+    </div>
+    <div id="readingArea">
+    <p class="story-sub" id="storySub">Set how far you are in Talk To Me In Korean's Core Grammar course and get a short story, conversation or description of Korea that only uses grammar you've already learned, with a few new words to stretch you.</p>
+    <div class="story-controls">
       <div class="story-field story-field-wide" id="storyFormatField">
         <label>What would you like to read?</label>
         <div class="format-tabs" id="storyFormatTabs" role="tablist">
@@ -1051,6 +1091,17 @@
     <div class="story-included" id="storyIncluded"></div>
     <div class="story-status" id="storyStatus"></div>
     <div class="story-output" id="storyOutput"></div>
+    </div>
+    <div id="writingArea" style="display:none;">
+      <p class="story-sub">Practise writing Korean and get instant feedback on your grammar, using only what you've learned so far. Choose an activity:</p>
+      <div class="format-tabs" id="writeTypeTabs" role="tablist">
+        <button type="button" class="format-tab active" data-wtype="sentences" role="tab">Sentences</button>
+        <button type="button" class="format-tab" data-wtype="conversation" role="tab">Conversation</button>
+        <button type="button" class="format-tab" data-wtype="text" role="tab">Story / description</button>
+      </div>
+      <div class="story-locked" id="writeLocked"></div>
+      <div id="writeBody"></div>
+    </div>
   </div>
 
   <div class="panel flashcards">
@@ -2148,6 +2199,576 @@ const TTMIK_CURRICULUM = [["Hello, Thank you / 안녕하세요, 감사합니다"
   updateStoryMode();
   fillStoryLevels();
   fillStoryLessons(1, null);
+
+
+  // ================= Writing practice =================
+  const WRITE_CONVO_SCENARIOS = [
+    'Ordering food at a restaurant', 'Buying a train ticket', 'Meeting someone for the first time', 'Asking for directions',
+    'Shopping for clothes', 'Checking in at a hotel', 'Talking about your weekend', 'Making a doctor\'s appointment',
+    'Ordering at a cafe', 'Chatting with a taxi driver', 'Inviting a friend to dinner', 'Returning something to a shop'
+  ];
+  const WRITE_STORY_IDEAS = ['A lost cat', 'A surprise visit', 'A day I will never forget', 'An unexpected gift', 'Getting lost in a new city', 'The best meal of my life'];
+  const WRITE_DESC_IDEAS = ['My best friend', 'My family', 'My favourite food', 'My home town', 'My daily routine', 'Someone I admire', 'My dream house', 'My favourite place'];
+
+  const practiceModeTabs = document.getElementById('practiceModeTabs');
+  const readingAreaEl = document.getElementById('readingArea');
+  const writingAreaEl = document.getElementById('writingArea');
+  const writeTypeTabs = document.getElementById('writeTypeTabs');
+  const writeBodyEl = document.getElementById('writeBody');
+  const writeLockedEl = document.getElementById('writeLocked');
+  let practiceMode = 'reading';
+  let writeType = 'sentences';
+
+  // per-activity state, so switching tabs does not lose your work
+  const wsSent = { items: null, idx: 0, results: [], loading: false, error: '', fb: null, checking: false, draft: '' };
+  const wsConvo = { scenario: '', started: false, loading: false, error: '', role: '', setting: '', goal: '', msgs: [], userTurns: 0, summary: null, hint: null, sending: false, draft: '' };
+  const wsText = { kind: 'story', subject: '', started: false, loading: false, error: '', fb: null, draft: '' };
+
+  async function writeAI(system, userText, maxTokens) {
+    const response = await fetch('/api/claude', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ max_tokens: maxTokens || 3000, system, messages: [{ role: 'user', content: userText }] })
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(typeof data.error === 'string' ? data.error : 'Something went wrong. Try again.');
+    const blocks = (data.content || []).filter(b => b.type === 'text' && b.text);
+    const raw = blocks.length ? blocks[blocks.length - 1].text.trim() : '';
+    const cleaned = raw.replace(/^```json/i, '').replace(/^```/, '').replace(/```$/, '').trim();
+    return JSON.parse(cleaned);
+  }
+
+  function writeErrMsg(e) {
+    return e && e.message && !(e instanceof SyntaxError) ? e.message : "Couldn't get a response. Try again.";
+  }
+
+  function writeLearnerContext() {
+    const { level, lesson } = getStoryProgress();
+    const g = collectGrammar(level, lesson);
+    return 'The learner is studying the Talk To Me In Korean (TTMIK) Core Grammar course and has completed Level ' + level + ', up to Lesson ' + lesson + '.\n\nGRAMMAR THEY KNOW:\n' + g.learned.join('\n') + '\n\nGRAMMAR THEY HAVE NOT LEARNED YET:\n' + g.upcoming.join('\n') + '\n';
+  }
+
+  const WRITE_FEEDBACK_RULES = 'Give feedback in English, kindly and constructively, as a patient Korean tutor. Be accurate: only call something a mistake if it really is one (spelling, spacing, particles, conjugation, word choice, unnatural phrasing, wrong politeness level). If the learner uses correct Korean that goes beyond their level, praise it rather than marking it wrong. Keep explanations short and concrete. When you write Korean in your feedback, write it exactly.';
+
+  function isWriteUnlocked(type) { return type === 'sentences' || getStoryProgress().level >= 2; }
+
+  function el(tag, cls, text) {
+    const e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text != null) e.textContent = text;
+    return e;
+  }
+  function htmlEl(tag, cls, html) {
+    const e = document.createElement(tag);
+    if (cls) e.className = cls;
+    e.innerHTML = html;
+    return e;
+  }
+
+  function renderChipPicker(container, ideas, current, onPick, count) {
+    container.innerHTML = '';
+    const pool = pickRandom(ideas, count || 6);
+    pool.forEach((t) => {
+      const b = el('button', 'topic-chip' + (t === current ? ' active' : ''), t);
+      b.type = 'button';
+      b.addEventListener('click', () => onPick(t));
+      container.appendChild(b);
+    });
+    const more = el('button', 'topic-shuffle', '↻ More ideas');
+    more.type = 'button';
+    more.addEventListener('click', () => renderChipPicker(container, ideas, current, onPick, count));
+    container.appendChild(more);
+  }
+
+  function updateWriteMode() {
+    writeTypeTabs.querySelectorAll('.format-tab').forEach((t) => {
+      const type = t.getAttribute('data-wtype');
+      t.classList.toggle('active', type === writeType);
+      t.classList.toggle('disabled', !isWriteUnlocked(type));
+    });
+    if (!isWriteUnlocked(writeType)) writeType = 'sentences';
+    writeTypeTabs.querySelectorAll('.format-tab').forEach(t => t.classList.toggle('active', t.getAttribute('data-wtype') === writeType));
+    if (getStoryProgress().level < 2) {
+      writeLockedEl.style.display = 'block';
+      writeLockedEl.textContent = 'Conversation and story/description writing unlock at Level 2. For now, practise writing single sentences with the grammar you know.';
+    } else {
+      writeLockedEl.style.display = 'none';
+    }
+  }
+
+  function renderWrite() {
+    if (practiceMode !== 'writing') return;
+    updateWriteMode();
+    writeBodyEl.innerHTML = '';
+    if (writeType === 'sentences') renderWriteSentences();
+    else if (writeType === 'conversation') renderWriteConvo();
+    else renderWriteText();
+  }
+
+  // ---------- Sentences ----------
+  function renderWriteSentences() {
+    const st = wsSent;
+    const box = el('div', 'write-card');
+    writeBodyEl.appendChild(box);
+
+    if (st.loading) { box.appendChild(el('div', 'story-status', 'Preparing your sentences…')); return; }
+    if (!st.items) {
+      box.appendChild(el('p', 'story-sub', "You'll get 5 English sentences to write in Korean, each built around grammar you've learned. After each one you'll see what to fix."));
+      if (st.error) box.appendChild(el('div', 'story-status error', st.error));
+      const b = el('button', 'story-btn', 'Start 5 sentences');
+      b.addEventListener('click', startWriteSentences);
+      box.appendChild(b);
+      return;
+    }
+    if (st.idx >= st.items.length) {
+      const right = st.results.filter(r => r === 'correct').length;
+      box.appendChild(el('h3', 'story-title', 'All done!'));
+      box.appendChild(el('div', 'story-title-en', right + ' of ' + st.items.length + ' were spot on first try.'));
+      const b = el('button', 'story-btn', 'New set of 5');
+      b.addEventListener('click', () => { st.items = null; st.idx = 0; st.results = []; st.fb = null; st.draft = ''; renderWrite(); });
+      box.appendChild(b);
+      return;
+    }
+    const item = st.items[st.idx];
+    box.appendChild(el('div', 'write-progress', 'Sentence ' + (st.idx + 1) + ' of ' + st.items.length));
+    const pr = el('div', 'write-prompt');
+    pr.appendChild(el('div', 'wp-label', 'Write this in Korean'));
+    pr.appendChild(el('div', 'wp-text', item.en));
+    box.appendChild(pr);
+    const meta = el('div', 'write-meta');
+    if (item.grammar) meta.appendChild(el('span', 'write-chip', 'Try using: ' + item.grammar));
+    (item.hints || []).forEach(h => { if (h && h.ko) meta.appendChild(el('span', 'write-chip soft', h.ko + (h.en ? ' = ' + h.en : ''))); });
+    box.appendChild(meta);
+
+    const ta = el('textarea', 'write-input');
+    ta.placeholder = 'Type your Korean sentence here';
+    ta.value = st.fb ? (st.fb.answer || '') : st.draft;
+    ta.disabled = !!st.fb;
+    ta.addEventListener('input', () => { st.draft = ta.value; });
+    box.appendChild(ta);
+
+    const actions = el('div', 'write-actions');
+    if (!st.fb) {
+      const chk = el('button', 'story-btn', st.checking ? 'Checking…' : 'Check my sentence');
+      chk.disabled = st.checking;
+      chk.addEventListener('click', () => checkWriteSentence(ta.value));
+      actions.appendChild(chk);
+    } else {
+      const next = el('button', 'story-btn', st.idx + 1 >= st.items.length ? 'Finish' : 'Next sentence');
+      next.addEventListener('click', () => { st.idx++; st.fb = null; st.draft = ''; renderWrite(); });
+      actions.appendChild(next);
+    }
+    box.appendChild(actions);
+    if (st.error) box.appendChild(el('div', 'story-status error', st.error));
+    if (st.fb) box.appendChild(buildSentenceFeedback(st.fb));
+    if (!st.fb) setTimeout(() => { try { ta.focus(); } catch (e) {} }, 0);
+  }
+
+  function buildSentenceFeedback(fb) {
+    const verdict = fb.verdict === 'correct' ? 'correct' : fb.verdict === 'almost' ? 'almost' : 'incorrect';
+    const box = el('div', 'write-fb ' + (verdict === 'correct' ? 'ok' : 'almost'));
+    box.appendChild(el('div', 'verdict', verdict === 'correct' ? '✓ Correct!' : verdict === 'almost' ? 'Almost there' : 'Not quite'));
+    if (fb.corrected && verdict !== 'correct') {
+      const b = el('div', 'block');
+      b.appendChild(el('h4', null, 'Corrected'));
+      b.appendChild(htmlEl('div', null, highlightForeignText(fb.corrected)));
+      box.appendChild(b);
+    }
+    if (fb.explanation) box.appendChild(htmlEl('div', 'block', highlightForeignText(fb.explanation)));
+    const ms = (fb.mistakes || []).filter(m => m && (m.wrong || m.right));
+    if (ms.length) {
+      const b = el('div', 'block');
+      b.appendChild(el('h4', null, 'What to fix'));
+      ms.forEach((m) => {
+        const row = el('div', 'mistake');
+        row.appendChild(htmlEl('div', null, '<span class="wrong">' + highlightForeignText(m.wrong || '') + '</span><span class="arrow">→</span>' + highlightForeignText(m.right || '')));
+        if (m.why) row.appendChild(htmlEl('div', null, highlightForeignText(m.why)));
+        b.appendChild(row);
+      });
+      box.appendChild(b);
+    }
+    if (fb.alternative) {
+      const b = el('div', 'block');
+      b.appendChild(el('h4', null, 'Another natural way'));
+      b.appendChild(htmlEl('div', null, highlightForeignText(fb.alternative)));
+      box.appendChild(b);
+    }
+    return box;
+  }
+
+  async function startWriteSentences() {
+    const st = wsSent;
+    const { level, lesson } = getStoryProgress();
+    const targets = pickStoryTargets(level, lesson);
+    const chosen = pickRandom(targets, 5);
+    const words = getPriorityWords(10);
+    st.loading = true; st.error = ''; renderWrite();
+    const sys = 'You create Korean writing exercises for a learner.\n' + writeLearnerContext() + '\n' +
+      'Create exactly 5 short English sentences that the learner will translate INTO Korean. Rules:\n1. Each sentence must be fully writable using ONLY grammar from the known list and very basic vocabulary. Keep them short (4 to 10 English words), natural and sensible, and different in topic.\n2. Build each sentence around a different known grammar point' + (chosen.length ? ', preferring these: ' + chosen.map(t => t.title).join(' | ') : '') + '. Put that grammar point in "grammar" (a short name such as -고 싶어요).\n3. For each, give 1 to 3 hint words (Korean + English meaning) for the key vocabulary the learner needs.' + (words.length ? ' Where natural, base hint words on the learner\'s saved words: ' + words.join(', ') + '.' : '') + '\n\n' +
+      'Respond with ONLY a JSON object, no markdown fences, in this exact shape: {"items":[{"en":"English sentence","grammar":"short grammar point name","hints":[{"ko":"Korean word","en":"meaning"}]}]}';
+    try {
+      const data = await writeAI(sys, 'Create the 5 exercises now.', 2500);
+      if (!data.items || !data.items.length) throw new Error('Could not build the exercises. Try again.');
+      st.items = data.items.slice(0, 5); st.idx = 0; st.results = []; st.fb = null; st.draft = '';
+    } catch (e) { st.error = writeErrMsg(e); }
+    st.loading = false; renderWrite();
+  }
+
+  async function checkWriteSentence(answer) {
+    const st = wsSent;
+    const text = (answer || '').trim();
+    if (!text) { st.error = 'Type your sentence first.'; renderWrite(); return; }
+    const item = st.items[st.idx];
+    st.checking = true; st.error = ''; renderWrite();
+    const sys = 'You are a Korean tutor checking one translation exercise.\n' + writeLearnerContext() + '\n' + WRITE_FEEDBACK_RULES + '\n\n' +
+      'The learner was asked to write this English sentence in Korean: "' + item.en + '". They wrote the Korean sentence below. Judge whether it is correct, natural Korean that conveys the meaning (several different correct Korean answers are possible; do not require a specific one).\n\n' +
+      'Respond with ONLY a JSON object, no markdown fences, in this exact shape: {"verdict":"correct" or "almost" or "incorrect","corrected":"the best corrected Korean version of THEIR sentence (identical to theirs if fully correct)","explanation":"1 to 3 short English sentences","mistakes":[{"wrong":"the wrong part of their sentence","right":"the fix","why":"short reason"}],"alternative":"one other natural way to say it in Korean, or an empty string"}';
+    try {
+      const fb = await writeAI(sys, text, 2000);
+      fb.answer = text;
+      st.fb = fb;
+      st.results[st.idx] = fb.verdict === 'correct' ? 'correct' : 'wrong';
+    } catch (e) { st.error = writeErrMsg(e); }
+    st.checking = false; renderWrite();
+  }
+
+  // ---------- Conversation ----------
+  function renderWriteConvo() {
+    const st = wsConvo;
+    const box = el('div', 'write-card');
+    writeBodyEl.appendChild(box);
+
+    if (st.loading) { box.appendChild(el('div', 'story-status', 'Setting the scene…')); return; }
+    if (!st.started) {
+      box.appendChild(el('p', 'story-sub', 'Have a text chat in Korean with a character. They reply in Korean at your level, and you get a quick correction after each message you write.'));
+      const f = el('div', 'story-field story-field-wide');
+      f.appendChild(el('label', null, 'Situation (optional)'));
+      const inp = el('input');
+      inp.type = 'text'; inp.maxLength = 80; inp.placeholder = 'Type a situation or someone to talk to, or pick one below'; inp.value = st.scenario;
+      const chips = el('div', 'topic-chips');
+      const pick = (t) => { st.scenario = st.scenario === t ? '' : t; inp.value = st.scenario; renderChipPicker(chips, WRITE_CONVO_SCENARIOS, st.scenario, pick); };
+      inp.addEventListener('input', () => { st.scenario = inp.value; });
+      f.appendChild(inp); f.appendChild(chips);
+      renderChipPicker(chips, WRITE_CONVO_SCENARIOS, st.scenario, pick);
+      box.appendChild(f);
+      if (st.error) box.appendChild(el('div', 'story-status error', st.error));
+      const b = el('button', 'story-btn', 'Start conversation');
+      b.style.marginTop = '14px';
+      b.addEventListener('click', startWriteConvo);
+      box.appendChild(b);
+      return;
+    }
+
+    const head = el('div', 'write-prompt');
+    head.appendChild(el('div', 'wp-label', 'You are talking to'));
+    head.appendChild(el('div', 'wp-text', st.role + (st.setting ? ' — ' + st.setting : '')));
+    if (st.goal) head.appendChild(el('div', 'chat-fb', 'Your goal: ' + st.goal));
+    box.appendChild(head);
+
+    const chat = el('div', 'chat-box');
+    st.msgs.forEach((m) => chat.appendChild(buildChatMsg(m)));
+    box.appendChild(chat);
+
+    if (st.summary) { box.appendChild(buildConvoSummary(st.summary)); return; }
+
+    if (st.hint) {
+      const h = el('div', 'write-hint');
+      h.appendChild(htmlEl('div', null, '<b>Try:</b> ' + highlightForeignText(st.hint.ko)));
+      if (st.hint.en) h.appendChild(el('div', 'chat-fb', st.hint.en));
+      const use = el('button', 'story-link-btn', 'Use this');
+      use.style.marginTop = '6px';
+      use.addEventListener('click', () => { st.draft = st.hint.ko; st.hint = null; renderWrite(); });
+      h.appendChild(use);
+      box.appendChild(h);
+    }
+
+    const done = st.userTurns >= 10;
+    const row = el('div', 'chat-input-row');
+    const ta = el('textarea', 'write-input');
+    ta.rows = 2; ta.placeholder = done ? 'That’s a good conversation! Tap Finish for feedback.' : 'Reply in Korean';
+    ta.value = st.draft; ta.disabled = st.sending || done;
+    ta.addEventListener('input', () => { st.draft = ta.value; });
+    ta.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); sendWriteConvo(ta.value); } });
+    const send = el('button', 'story-btn', st.sending ? '…' : 'Send');
+    send.disabled = st.sending || done;
+    send.addEventListener('click', () => sendWriteConvo(ta.value));
+    row.appendChild(ta); row.appendChild(send);
+    box.appendChild(row);
+    if (st.error) box.appendChild(el('div', 'story-status error', st.error));
+
+    const actions = el('div', 'write-actions');
+    const hint = el('button', 'story-link-btn', 'Need a hint?');
+    hint.disabled = st.sending;
+    hint.addEventListener('click', getWriteConvoHint);
+    const fin = el('button', 'story-link-btn', 'Finish & get feedback');
+    fin.disabled = st.sending || st.userTurns < 1;
+    fin.addEventListener('click', finishWriteConvo);
+    const restart = el('button', 'story-link-btn', 'Start over');
+    restart.addEventListener('click', resetWriteConvo);
+    actions.appendChild(hint); actions.appendChild(fin); actions.appendChild(restart);
+    box.appendChild(actions);
+  }
+
+  function buildChatMsg(m) {
+    const row = el('div', 'convo-line' + (m.who === 'user' ? ' right' : ''));
+    row.appendChild(el('div', 'convo-speaker', m.who === 'user' ? 'You' : (wsConvo.role.split(',')[0] || 'Partner')));
+    const bubble = el('div', 'convo-bubble');
+    if (m.who === 'ai') bubble.appendChild(makeClickableText(m.ko, m.ko, 'English'));
+    else bubble.textContent = m.ko;
+    row.appendChild(bubble);
+    if (m.who === 'ai' && m.en) {
+      const en = el('div', 'convo-en', m.en);
+      en.style.display = m.showEn ? 'block' : 'none';
+      const t = el('button', 'chat-en-toggle', m.showEn ? 'Hide English' : 'Show English');
+      t.addEventListener('click', () => { m.showEn = !m.showEn; en.style.display = m.showEn ? 'block' : 'none'; t.textContent = m.showEn ? 'Hide English' : 'Show English'; });
+      row.appendChild(t); row.appendChild(en);
+    }
+    if (m.who === 'user' && m.fb) {
+      if (m.fb.ok) row.appendChild(el('div', 'chat-fb ok', '✓ Looks good'));
+      else {
+        const f = el('div', 'chat-fb');
+        f.innerHTML = '<b>Better:</b> ' + highlightForeignText(m.fb.corrected || '') + (m.fb.note ? '<br>' + highlightForeignText(m.fb.note) : '');
+        row.appendChild(f);
+      }
+    }
+    return row;
+  }
+
+  function buildConvoSummary(sum) {
+    const box = el('div', 'write-fb ok');
+    box.appendChild(el('h4', null, 'Conversation feedback'));
+    if (sum.overall) box.appendChild(htmlEl('div', 'block', highlightForeignText(sum.overall)));
+    [['strengths', 'What went well'], ['improve', 'To work on'], ['tips', 'Try next time']].forEach(([k, label]) => {
+      const arr = (sum[k] || []).filter(Boolean);
+      if (!arr.length) return;
+      const b = el('div', 'block');
+      b.appendChild(el('h4', null, label));
+      const ul = el('ul');
+      arr.forEach(x => ul.appendChild(htmlEl('li', null, highlightForeignText(x))));
+      b.appendChild(ul);
+      box.appendChild(b);
+    });
+    const again = el('button', 'story-btn', 'New conversation');
+    again.style.marginTop = '14px';
+    again.addEventListener('click', resetWriteConvo);
+    box.appendChild(again);
+    return box;
+  }
+
+  function resetWriteConvo() {
+    Object.assign(wsConvo, { started: false, loading: false, error: '', role: '', setting: '', goal: '', msgs: [], userTurns: 0, summary: null, hint: null, sending: false, draft: '' });
+    renderWrite();
+  }
+
+  function convoSystemPrompt() {
+    const st = wsConvo;
+    return 'You are role-playing a short, friendly Korean conversation with a learner AND tutoring them.\nYour character: ' + st.role + '. Setting: ' + st.setting + '.\n' + writeLearnerContext() + '\n' +
+      'ROLE-PLAY RULES: Stay in character. Reply in natural, polite Korean using ONLY known grammar and very basic vocabulary (no unlearned grammar). Keep each reply to 1 or 2 short sentences and usually end with a simple question or prompt so the conversation keeps going. If the learner writes something unclear or off-topic, gently steer back in character.\n' + WRITE_FEEDBACK_RULES + '\n';
+  }
+
+  function convoTranscript() {
+    return wsConvo.msgs.slice(-14).map(m => (m.who === 'user' ? 'Learner: ' : 'Character: ') + m.ko).join('\n');
+  }
+
+  async function startWriteConvo() {
+    const st = wsConvo;
+    const scenario = st.scenario.trim() || pickRandom(WRITE_CONVO_SCENARIOS, 1)[0];
+    st.loading = true; st.error = ''; renderWrite();
+    const words = getPriorityWords(8);
+    const sys = 'You set up a Korean conversation practice scene for a learner.\n' + writeLearnerContext() + '\n' +
+      'Situation: ' + scenario + '. Invent a specific character the learner will talk to (with a Korean first name and role) and the setting. Write the character\'s opening line in natural, polite Korean using ONLY known grammar and basic vocabulary, 1 or 2 short sentences, ending with a question.' + (words.length ? ' If natural, include one of the learner\'s saved words: ' + words.join(', ') + '.' : '') + '\n\n' +
+      'Respond with ONLY a JSON object, no markdown fences, in this exact shape: {"role":"Korean first name, role in English (e.g. Min-su, a cafe worker)","setting":"one short English sentence describing where you are","goal":"one short English sentence telling the learner what to try to achieve in this chat","reply":{"ko":"opening line in Korean","en":"English translation"}}';
+    try {
+      const d = await writeAI(sys, 'Start the conversation.', 1500);
+      if (!d.reply || !d.reply.ko) throw new Error('Could not start the conversation. Try again.');
+      st.role = d.role || 'Partner'; st.setting = d.setting || ''; st.goal = d.goal || '';
+      st.msgs = [{ who: 'ai', ko: d.reply.ko, en: d.reply.en || '', showEn: false }];
+      st.userTurns = 0; st.summary = null; st.hint = null; st.draft = ''; st.started = true;
+    } catch (e) { st.error = writeErrMsg(e); }
+    st.loading = false; renderWrite();
+  }
+
+  async function sendWriteConvo(text) {
+    const st = wsConvo;
+    const msg = (text || '').trim();
+    if (!msg || st.sending) return;
+    const um = { who: 'user', ko: msg, fb: null };
+    st.msgs.push(um); st.draft = ''; st.hint = null; st.sending = true; st.error = ''; renderWrite();
+    const sys = convoSystemPrompt() + '\nThe learner just sent a new message (the last line of the transcript). 1) Check it: is it correct, natural Korean that makes sense in the conversation? 2) Reply in character.\n\n' +
+      'Respond with ONLY a JSON object, no markdown fences, in this exact shape: {"feedback":{"ok":true or false,"corrected":"corrected Korean version of the learner\'s message if it needs fixing, else empty","note":"one short English explanation of the fix, else empty"},"reply":{"ko":"your in-character reply in Korean","en":"English translation"}}';
+    try {
+      const d = await writeAI(sys, 'Transcript so far:\n' + convoTranscript(), 1500);
+      um.fb = { ok: !(d.feedback && d.feedback.ok === false && d.feedback.corrected), corrected: d.feedback && d.feedback.corrected || '', note: d.feedback && d.feedback.note || '' };
+      st.userTurns++;
+      if (d.reply && d.reply.ko) st.msgs.push({ who: 'ai', ko: d.reply.ko, en: d.reply.en || '', showEn: false });
+      recordStoryWordUse(msg, getPriorityWords(15));
+    } catch (e) {
+      st.msgs.pop(); st.draft = msg; st.error = writeErrMsg(e);
+    }
+    st.sending = false; renderWrite();
+  }
+
+  async function getWriteConvoHint() {
+    const st = wsConvo;
+    st.sending = true; st.error = ''; renderWrite();
+    const sys = convoSystemPrompt() + '\nThe learner is stuck. Suggest ONE simple, natural thing they could say next (in Korean, using only known grammar), appropriate as a reply to the character\'s last line.\n\nRespond with ONLY a JSON object, no markdown fences, in this exact shape: {"ko":"suggested Korean reply","en":"English meaning"}';
+    try {
+      const d = await writeAI(sys, 'Transcript so far:\n' + convoTranscript(), 800);
+      if (d.ko) st.hint = { ko: d.ko, en: d.en || '' };
+    } catch (e) { st.error = writeErrMsg(e); }
+    st.sending = false; renderWrite();
+  }
+
+  async function finishWriteConvo() {
+    const st = wsConvo;
+    st.sending = true; st.error = ''; renderWrite();
+    const sys = convoSystemPrompt() + '\nThe conversation is over. Review ONLY the learner\'s lines in the transcript and give an encouraging overall assessment.\n\nRespond with ONLY a JSON object, no markdown fences, in this exact shape: {"overall":"2 to 3 sentences of encouraging overall feedback in English","strengths":["1 to 3 specific things they did well"],"improve":["1 to 3 specific mistakes or weaknesses, quoting the Korean"],"tips":["1 to 2 concrete tips or grammar points from their level to try next time"]}';
+    try {
+      st.summary = await writeAI(sys, 'Full transcript:\n' + convoTranscript(), 2000);
+    } catch (e) { st.error = writeErrMsg(e); }
+    st.sending = false; renderWrite();
+  }
+
+  // ---------- Story / description ----------
+  function renderWriteText() {
+    const st = wsText;
+    const box = el('div', 'write-card');
+    writeBodyEl.appendChild(box);
+
+    if (!st.started) {
+      const tabs = el('div', 'format-tabs');
+      [['story', 'Short story'], ['description', 'Description']].forEach(([k, label]) => {
+        const b = el('button', 'format-tab' + (st.kind === k ? ' active' : ''), label);
+        b.type = 'button';
+        b.addEventListener('click', () => { st.kind = k; st.subject = ''; renderWrite(); });
+        tabs.appendChild(b);
+      });
+      box.appendChild(tabs);
+      const f = el('div', 'story-field story-field-wide');
+      f.style.marginTop = '14px';
+      f.appendChild(el('label', null, st.kind === 'story' ? 'What is your story about?' : 'Describe something or someone'));
+      const inp = el('input');
+      inp.type = 'text'; inp.maxLength = 80; inp.value = st.subject;
+      inp.placeholder = st.kind === 'story' ? 'Type your own idea, or pick one below' : 'e.g. my best friend, my favourite food…';
+      const chips = el('div', 'topic-chips');
+      const ideas = st.kind === 'story' ? WRITE_STORY_IDEAS : WRITE_DESC_IDEAS;
+      const pick = (t) => { st.subject = st.subject === t ? '' : t; inp.value = st.subject; renderChipPicker(chips, ideas, st.subject, pick); };
+      inp.addEventListener('input', () => { st.subject = inp.value; });
+      f.appendChild(inp); f.appendChild(chips);
+      renderChipPicker(chips, ideas, st.subject, pick);
+      box.appendChild(f);
+      const b = el('button', 'story-btn', 'Start writing');
+      b.style.marginTop = '14px';
+      b.addEventListener('click', () => {
+        st.subject = st.subject.trim() || pickRandom(ideas, 1)[0];
+        st.started = true; st.fb = null; st.draft = ''; st.error = '';
+        renderWrite();
+      });
+      box.appendChild(b);
+      return;
+    }
+
+    const pr = el('div', 'write-prompt');
+    pr.appendChild(el('div', 'wp-label', st.kind === 'story' ? 'Write a short story about' : 'Write a description of'));
+    pr.appendChild(el('div', 'wp-text', st.subject));
+    box.appendChild(pr);
+    box.appendChild(el('div', 'chat-fb', 'Aim for 4 to 8 sentences in Korean, using grammar you know. Don’t worry about being perfect — you’ll get corrections.'));
+
+    const ta = el('textarea', 'write-input');
+    ta.rows = 6; ta.style.marginTop = '10px';
+    ta.placeholder = '한국어로 쓰세요…';
+    ta.value = st.draft;
+    ta.addEventListener('input', () => { st.draft = ta.value; });
+    box.appendChild(ta);
+
+    const actions = el('div', 'write-actions');
+    const chk = el('button', 'story-btn', st.loading ? 'Checking…' : (st.fb ? 'Check again' : 'Check my writing'));
+    chk.disabled = st.loading;
+    chk.addEventListener('click', () => checkWriteText(ta.value));
+    const back = el('button', 'story-link-btn', 'Choose a different topic');
+    back.addEventListener('click', () => { st.started = false; st.fb = null; st.draft = ''; st.subject = ''; renderWrite(); });
+    actions.appendChild(chk); actions.appendChild(back);
+    box.appendChild(actions);
+    if (st.error) box.appendChild(el('div', 'story-status error', st.error));
+    if (st.fb) box.appendChild(buildTextFeedback(st.fb));
+  }
+
+  function buildTextFeedback(fb) {
+    const box = el('div', 'write-fb ok');
+    box.appendChild(el('h4', null, 'Feedback'));
+    if (fb.overall) box.appendChild(htmlEl('div', 'block', highlightForeignText(fb.overall)));
+    const cs = (fb.corrections || []).filter(c => c && (c.original || c.corrected));
+    if (cs.length) {
+      const b = el('div', 'block');
+      b.appendChild(el('h4', null, 'Corrections'));
+      cs.forEach((c) => {
+        const row = el('div', 'mistake');
+        row.appendChild(htmlEl('div', null, '<span class="wrong">' + highlightForeignText(c.original || '') + '</span><span class="arrow">→</span>' + highlightForeignText(c.corrected || '')));
+        if (c.why) row.appendChild(htmlEl('div', null, highlightForeignText(c.why)));
+        b.appendChild(row);
+      });
+      box.appendChild(b);
+    } else {
+      box.appendChild(el('div', 'block', '✓ No mistakes found — nice work!'));
+    }
+    if (fb.correctedText) {
+      const b = el('div', 'block');
+      b.appendChild(el('h4', null, 'Corrected version'));
+      b.appendChild(htmlEl('div', null, highlightForeignText(fb.correctedText)));
+      box.appendChild(b);
+    }
+    const good = (fb.wellDone || []).filter(Boolean);
+    if (good.length) {
+      const b = el('div', 'block');
+      b.appendChild(el('h4', null, 'Done well'));
+      const ul = el('ul');
+      good.forEach(x => ul.appendChild(htmlEl('li', null, highlightForeignText(x))));
+      b.appendChild(ul); box.appendChild(b);
+    }
+    if (fb.upgrade) {
+      const b = el('div', 'block');
+      b.appendChild(el('h4', null, 'Level up'));
+      b.appendChild(htmlEl('div', null, highlightForeignText(fb.upgrade)));
+      box.appendChild(b);
+    }
+    return box;
+  }
+
+  async function checkWriteText(text) {
+    const st = wsText;
+    const t = (text || '').trim();
+    if (t.length < 6) { st.error = 'Write a few sentences first.'; renderWrite(); return; }
+    st.loading = true; st.error = ''; st.draft = t; renderWrite();
+    const sys = 'You are a Korean tutor reviewing a learner\'s short piece of writing.\n' + writeLearnerContext() + '\n' + WRITE_FEEDBACK_RULES + '\n\n' +
+      'The learner was asked to write a ' + (st.kind === 'story' ? 'short story' : 'description') + ' about: "' + st.subject + '". Review the text sentence by sentence. List each real mistake in "corrections" (quote the learner\'s wording in "original", give the fix in "corrected", explain briefly in "why"). Do not invent mistakes. Give the full corrected text, note what they did well, and offer ONE upgraded sentence idea that uses a grammar point from their known list (or just beyond) to stretch them.\n\n' +
+      'Respond with ONLY a JSON object, no markdown fences, in this exact shape: {"overall":"2 to 3 encouraging sentences in English about the writing as a whole","corrections":[{"original":"...","corrected":"...","why":"..."}],"correctedText":"the full text with all corrections applied","wellDone":["1 to 3 specific things done well"],"upgrade":"one improved example sentence in Korean with a short English note"}';
+    try {
+      st.fb = await writeAI(sys, t, 4000);
+      recordStoryWordUse(t, getPriorityWords(15));
+    } catch (e) { st.error = writeErrMsg(e); }
+    st.loading = false; renderWrite();
+  }
+
+  // ---------- wiring ----------
+  practiceModeTabs.addEventListener('click', (e) => {
+    const btn = e.target.closest('.format-tab');
+    if (!btn) return;
+    practiceMode = btn.getAttribute('data-mode');
+    practiceModeTabs.querySelectorAll('.format-tab').forEach(t => t.classList.toggle('active', t === btn));
+    readingAreaEl.style.display = practiceMode === 'reading' ? '' : 'none';
+    writingAreaEl.style.display = practiceMode === 'writing' ? '' : 'none';
+    if (practiceMode === 'writing') renderWrite();
+  });
+  writeTypeTabs.addEventListener('click', (e) => {
+    const btn = e.target.closest('.format-tab');
+    if (!btn) return;
+    const type = btn.getAttribute('data-wtype');
+    if (!isWriteUnlocked(type)) { updateWriteMode(); return; }
+    writeType = type;
+    renderWrite();
+  });
+  storyLevelEl.addEventListener('change', () => { if (practiceMode === 'writing') renderWrite(); });
+  storyLessonEl.addEventListener('change', () => { /* progress only affects the next exercise */ });
 
   function initAuth() {
     if (!supabaseClient) {
