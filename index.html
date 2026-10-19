@@ -455,6 +455,12 @@
     font-size: 20px;
     color: var(--ink);
   }
+  .fc-toggle { display: flex; align-items: center; gap: 8px; border: none; background: transparent; cursor: pointer; padding: 0; }
+  .fc-toggle .chevron { display: flex; color: var(--stone); transition: transform 0.2s ease; }
+  .flashcards.collapsed .fc-toggle .chevron { transform: rotate(-90deg); }
+  .flashcards.collapsed .fc-body { display: none; }
+  .flashcards.collapsed .flashcards-head { margin-bottom: 0; }
+  .flashcards.collapsed .quiz-btn, .flashcards.collapsed .clear-btn { display: none; }
   .flashcards-empty { font-size: 13px; color: var(--stone); }
 
   .set-filter {
@@ -594,29 +600,6 @@
     border: 1px dashed var(--stone-light);
   }
 
-  .history-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
-  .history-toggle {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    border: none;
-    background: transparent;
-    cursor: pointer;
-    padding: 0;
-  }
-  .history-toggle .label {
-    font-family: "Noto Sans KR", "Noto Sans JP", sans-serif;
-    font-weight: 600;
-    font-size: 20px;
-    color: var(--ink);
-  }
-  .history-toggle .chevron {
-    display: flex;
-    color: var(--stone);
-    transition: transform 0.2s ease;
-  }
-  .history.collapsed .history-toggle .chevron { transform: rotate(-90deg); }
-  .history.collapsed .history-body { display: none; }
   .clear-btn {
     border: none;
     background: transparent;
@@ -626,63 +609,6 @@
     font-family: "Inter", sans-serif;
   }
   .clear-btn:hover { color: var(--seal); }
-  .history-empty { font-size: 13px; color: var(--stone); }
-  .history-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 12px 0;
-    border-bottom: 1px solid var(--stone-light);
-    gap: 10px;
-  }
-  .history-item:last-child { border-bottom: none; }
-  .history-item:hover .history-source { color: var(--seal); }
-  .history-main {
-    display: flex;
-    align-items: baseline;
-    flex-wrap: wrap;
-    gap: 2px 12px;
-    flex: 1;
-    min-width: 0;
-    cursor: pointer;
-  }
-  .history-source {
-    font-family: "Noto Sans KR", "Noto Sans JP", sans-serif;
-    font-weight: 600;
-    font-size: 18px;
-    color: var(--ink);
-    flex-shrink: 1;
-    min-width: 0;
-    max-width: 100%;
-    overflow-wrap: anywhere;
-  }
-  .history-translation {
-    min-width: 0;
-    max-width: 100%;
-    font-size: 13px;
-    color: var(--stone);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    font-family: "Inter", sans-serif;
-  }
-  .history-remove {
-    flex-shrink: 0;
-    width: 22px;
-    height: 22px;
-    border-radius: 50%;
-    border: none;
-    background: transparent;
-    color: var(--stone);
-    font-size: 14px;
-    line-height: 1;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .history-remove:hover { background: var(--seal); color: var(--card); }
-  .history-remove svg { width: 13px; height: 13px; display: block; }
 
   html, body { max-width: 100%; overflow-x: hidden; }
   .app { min-width: 0; overflow-x: hidden; }
@@ -931,6 +857,14 @@
   .convo-en { display: none; font-size: 13px; color: var(--ink-soft); margin: 4px 6px 0; line-height: 1.5; overflow-wrap: anywhere; }
   .story-output.show-en .convo-en { display: block; }
   .mode-tabs { margin: 10px 0 16px; }
+  .format-tab.icon-tab { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; padding: 8px 4px 7px; border-radius: 18px; }
+  .format-tab .tab-label { font-size: 11.5px; line-height: 1.15; text-align: center; font-family: "Inter", sans-serif; }
+  .format-tabs:has(.icon-tab) { border-radius: 22px; }
+  @media (max-width: 360px) { .format-tab .tab-label { font-size: 10px; } .format-tab.icon-tab { padding: 8px 2px 7px; } }
+  .format-tab.icon-tab svg { width: 22px; height: 22px; display: block; }
+  .mode-tabs .format-tab svg { width: 24px; height: 24px; }
+  .mode-tabs .format-tab.icon-tab { padding: 9px 6px; border-radius: 100px; }
+  .format-tabs.mode-tabs { border-radius: 100px; }
   .format-tab.disabled { opacity: 0.45; }
   #writeTypeTabs { margin-top: 4px; }
   .write-card { margin-top: 16px; }
@@ -963,6 +897,13 @@
   .chat-input-row { display: flex; gap: 8px; align-items: flex-end; margin-top: 12px; }
   .chat-input-row textarea { flex: 1; min-height: 46px; max-height: 120px; }
   .write-hint { background: var(--paper); border: 1px dashed var(--stone-light); border-radius: 12px; padding: 10px 13px; margin-top: 10px; font-size: 14px; }
+  .write-progress-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .write-progress-row .write-progress { margin-bottom: 0; }
+  .mastery-dots { display: flex; gap: 6px; align-items: center; }
+  .mastery-dot { width: 11px; height: 11px; border-radius: 50%; background: var(--stone-light); transition: background 0.25s ease, transform 0.25s ease; }
+  .mastery-dot.on { background: var(--success); transform: scale(1.1); }
+  .mastery-note { margin-top: 10px; font-size: 13px; color: var(--ink-soft); line-height: 1.5; }
+  .mastery-note.done { color: var(--success); font-weight: 600; }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -1040,11 +981,30 @@
     </div>
   </div>
 
+  <div class="panel flashcards" id="flashcardsPanel">
+    <div class="flashcards-head">
+      <button type="button" class="fc-toggle" id="flashcardsToggleBtn" aria-expanded="true">
+        <span class="label">Flashcards</span>
+        <span class="chevron" aria-hidden="true"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2.5 4.5L6 8L9.5 4.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      </button>
+      <div class="flashcards-head-actions">
+        <button class="quiz-btn" id="quizBtn" disabled>Quiz me</button>
+        <button class="clear-btn" id="clearFlashcardsBtn">Clear</button>
+      </div>
+    </div>
+    <div class="fc-body" id="flashcardsBody">
+    <div class="set-filter" id="setFilter" style="display:none;"></div>
+    <div id="flashcardsGrid">
+      <div class="flashcards-empty">Save a translation to start a deck. Tap a card to flip it.</div>
+    </div>
+    </div>
+  </div>
+
   <div class="panel story-panel" id="storyPanel">
     <div class="story-head"><span class="label">Practice</span></div>
     <div class="format-tabs mode-tabs" id="practiceModeTabs" role="tablist">
-      <button type="button" class="format-tab active" data-mode="reading" role="tab">Reading</button>
-      <button type="button" class="format-tab" data-mode="writing" role="tab">Writing</button>
+      <button type="button" class="format-tab icon-tab active" data-mode="reading" role="tab" aria-label="Reading practice" title="Reading practice"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 6.5C10.3 5.2 8 4.5 4.5 4.5v13c3.5 0 5.8.7 7.5 2 1.7-1.3 4-2 7.5-2v-13C16 4.5 13.7 5.2 12 6.5z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M12 6.5v13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>
+      <button type="button" class="format-tab icon-tab" data-mode="writing" role="tab" aria-label="Writing practice" title="Writing practice"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M15.5 4.5l4 4L8.5 19.5 4 20l.5-4.5L15.5 4.5z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M13.5 6.5l4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>
     </div>
     <div class="story-controls">
       <div class="story-field">
@@ -1062,9 +1022,9 @@
       <div class="story-field story-field-wide" id="storyFormatField">
         <label>What would you like to read?</label>
         <div class="format-tabs" id="storyFormatTabs" role="tablist">
-          <button type="button" class="format-tab active" data-format="story" role="tab">Story</button>
-          <button type="button" class="format-tab" data-format="conversation" role="tab">Conversation</button>
-          <button type="button" class="format-tab" data-format="description" role="tab">About Korea</button>
+          <button type="button" class="format-tab active icon-tab" data-format="story" role="tab" aria-label="Story" title="Story"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3.5h7l4 4V20a.5.5 0 0 1-.5.5h-10A.5.5 0 0 1 7 20V3.5z"/><path d="M14 3.5v4h4"/><path d="M9.5 12h5M9.5 15.5h5"/></svg><span class="tab-label">Story</span></button>
+          <button type="button" class="format-tab icon-tab" data-format="conversation" role="tab" aria-label="Conversation" title="Conversation"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h10a1.5 1.5 0 0 1 1.5 1.5v5A1.5 1.5 0 0 1 14 13H9l-3 2.5V13H4a1.5 1.5 0 0 1-1.5-1.5v-5A1.5 1.5 0 0 1 4 5z"/><path d="M18.5 9H20a1.5 1.5 0 0 1 1.5 1.5v5A1.5 1.5 0 0 1 20 17h-1.5v2.5L15.5 17H11"/></svg><span class="tab-label">Conversation</span></button>
+          <button type="button" class="format-tab icon-tab" data-format="description" role="tab" aria-label="About Korea" title="About Korea"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 10c3.2 0 6.2-1.6 9.5-5.5 3.3 3.9 6.3 5.5 9.5 5.5"/><path d="M6 10v9M18 10v9M3 19.5h18M10 19.5V14h4v5.5"/></svg><span class="tab-label">About Korea</span></button>
         </div>
       </div>
       <div class="story-field story-field-wide" id="storyStyleField">
@@ -1095,45 +1055,16 @@
     <div id="writingArea" style="display:none;">
       <p class="story-sub">Practise writing Korean and get instant feedback on your grammar, using only what you've learned so far. Choose an activity:</p>
       <div class="format-tabs" id="writeTypeTabs" role="tablist">
-        <button type="button" class="format-tab active" data-wtype="sentences" role="tab">Sentences</button>
-        <button type="button" class="format-tab" data-wtype="conversation" role="tab">Conversation</button>
-        <button type="button" class="format-tab" data-wtype="text" role="tab">Story / description</button>
+        <button type="button" class="format-tab active icon-tab" data-wtype="sentences" role="tab" aria-label="Sentences" title="Sentences"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M4 12h10M4 17h14"/></svg><span class="tab-label">Sentences</span></button>
+        <button type="button" class="format-tab icon-tab" data-wtype="conversation" role="tab" aria-label="Conversation" title="Conversation"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h10a1.5 1.5 0 0 1 1.5 1.5v5A1.5 1.5 0 0 1 14 13H9l-3 2.5V13H4a1.5 1.5 0 0 1-1.5-1.5v-5A1.5 1.5 0 0 1 4 5z"/><path d="M18.5 9H20a1.5 1.5 0 0 1 1.5 1.5v5A1.5 1.5 0 0 1 20 17h-1.5v2.5L15.5 17H11"/></svg><span class="tab-label">Conversation</span></button>
+        <button type="button" class="format-tab icon-tab" data-wtype="story" role="tab" aria-label="Story" title="Story"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3.5h7l4 4V20a.5.5 0 0 1-.5.5h-10A.5.5 0 0 1 7 20V3.5z"/><path d="M14 3.5v4h4"/><path d="M9.5 12h5M9.5 15.5h5"/></svg><span class="tab-label">Story</span></button>
+        <button type="button" class="format-tab icon-tab" data-wtype="description" role="tab" aria-label="Description" title="Description"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="14" rx="2"/><circle cx="9" cy="10" r="1.5"/><path d="M4 17l5-4.5 3.5 3L15 13.5l5 4.5"/></svg><span class="tab-label">Description</span></button>
       </div>
       <div class="story-locked" id="writeLocked"></div>
       <div id="writeBody"></div>
     </div>
   </div>
-
-  <div class="panel flashcards">
-    <div class="flashcards-head">
-      <span class="label">Flashcards</span>
-      <div class="flashcards-head-actions">
-        <button class="quiz-btn" id="quizBtn" disabled>Quiz me</button>
-        <button class="clear-btn" id="clearFlashcardsBtn">Clear</button>
-      </div>
-    </div>
-    <div class="set-filter" id="setFilter" style="display:none;"></div>
-    <div id="flashcardsGrid">
-      <div class="flashcards-empty">Save a translation to start a deck. Tap a card to flip it.</div>
-    </div>
-  </div>
-
-  <div class="panel history collapsed" id="historyPanel">
-    <div class="history-head">
-      <button class="history-toggle" id="historyToggleBtn" aria-expanded="false">
-        <span class="label">History</span>
-        <span class="chevron" aria-hidden="true">
-          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2.5 4.5L6 8L9.5 4.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </span>
-      </button>
-      <button class="clear-btn" id="clearHistoryBtn">Clear</button>
-    </div>
-    <div class="history-body" id="historyBody">
-      <div id="historyList">
-        <div class="history-empty">Words you look up will appear here.</div>
-      </div>
-    </div>
-  </div>
+</div>
 </div>
 
 <div class="modal-overlay" id="setModalOverlay">
@@ -1339,10 +1270,6 @@
   const statusEl = document.getElementById('status');
   const copyBtn = document.getElementById('copyBtn');
   const saveBtn = document.getElementById('saveBtn');
-  const historyListEl = document.getElementById('historyList');
-  const clearHistoryBtn = document.getElementById('clearHistoryBtn');
-  const historyPanel = document.getElementById('historyPanel');
-  const historyToggleBtn = document.getElementById('historyToggleBtn');
   const flashcardsGridEl = document.getElementById('flashcardsGrid');
   const setFilterEl = document.getElementById('setFilter');
   const clearFlashcardsBtn = document.getElementById('clearFlashcardsBtn');
@@ -1395,8 +1322,6 @@
   const setModalCancel = document.getElementById('setModalCancel');
   const setModalSave = document.getElementById('setModalSave');
 
-  const HISTORY_KEY = 'history';
-  const MAX_HISTORY = 50;
   const FLASHCARDS_KEY = 'flashcards';
   const LANG_NAMES = { ko: '한국어', en: 'English', ja: '日本語', pl: 'polski' };
   const LANG_NAMES_EN = { ko: 'Korean', en: 'English', ja: 'Japanese', pl: 'Polish' };
@@ -1420,7 +1345,6 @@
 
   let currentPairId = 'ko-en';
   let requestId = 0;
-  let historyItems = [];
   let flashcards = [];
   let currentEntry = null;
   let activeSet = 'all';
@@ -1557,7 +1481,6 @@
       const data = await runLegacyImport(oldSecret);
       if (data.migrated && data.migrated.length) {
         alert('Imported: ' + data.migrated.join(', ') + '.');
-        loadHistory();
         loadFlashcards();
       } else {
         alert('No old data found to import.');
@@ -1575,7 +1498,7 @@
     if (localStorage.getItem(flagKey)) return;
 
     const wantsImport = window.confirm(
-      'Import your old flashcards and history from before accounts existed? You will need the old app passphrase.'
+      'Import your old flashcards from before accounts existed? You will need the old app passphrase.'
     );
     if (!wantsImport) return;
 
@@ -1882,7 +1805,16 @@ const TTMIK_CURRICULUM = [["Hello, Thank you / 안녕하세요, 감사합니다"
     storyOutput.style.display = 'block';
   }
 
+  const flashcardsPanelEl = document.getElementById('flashcardsPanel');
+  const flashcardsToggleBtn = document.getElementById('flashcardsToggleBtn');
+  function setFlashcardsCollapsed(c) {
+    flashcardsPanelEl.classList.toggle('collapsed', c);
+    flashcardsToggleBtn.setAttribute('aria-expanded', c ? 'false' : 'true');
+  }
+  flashcardsToggleBtn.addEventListener('click', () => setFlashcardsCollapsed(!flashcardsPanelEl.classList.contains('collapsed')));
+
   async function generateStory() {
+    setFlashcardsCollapsed(true);
     const { level, lesson } = getStoryProgress();
     const topic = storyTopicEl.value.trim();
     const myId = ++storyRequestId;
@@ -2189,7 +2121,7 @@ const TTMIK_CURRICULUM = [["Hello, Thank you / 안녕하세요, 감사합니다"
     const btn = e.target.closest('.format-tab');
     if (!btn) return;
     storyFormat = btn.getAttribute('data-format');
-    document.querySelectorAll('.format-tab').forEach(t => t.classList.toggle('active', t === btn));
+    document.getElementById('storyFormatTabs').querySelectorAll('.format-tab').forEach(t => t.classList.toggle('active', t === btn));
     storyTopicEl.value = '';
     renderTopicChips();
     updateStoryMode();
@@ -2210,6 +2142,10 @@ const TTMIK_CURRICULUM = [["Hello, Thank you / 안녕하세요, 감사합니다"
   const WRITE_STORY_IDEAS = ['A lost cat', 'A surprise visit', 'A day I will never forget', 'An unexpected gift', 'Getting lost in a new city', 'The best meal of my life'];
   const WRITE_DESC_IDEAS = ['My best friend', 'My family', 'My favourite food', 'My home town', 'My daily routine', 'Someone I admire', 'My dream house', 'My favourite place'];
 
+  const WRITE_ICONS = {
+    doc: '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3.5h7l4 4V20a.5.5 0 0 1-.5.5h-10A.5.5 0 0 1 7 20V3.5z"/><path d="M14 3.5v4h4"/><path d="M9.5 12h5M9.5 15.5h5"/></svg>',
+    picture: '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="14" rx="2"/><circle cx="9" cy="10" r="1.5"/><path d="M4 17l5-4.5 3.5 3L15 13.5l5 4.5"/></svg>'
+  };
   const practiceModeTabs = document.getElementById('practiceModeTabs');
   const readingAreaEl = document.getElementById('readingArea');
   const writingAreaEl = document.getElementById('writingArea');
@@ -2220,9 +2156,11 @@ const TTMIK_CURRICULUM = [["Hello, Thank you / 안녕하세요, 감사합니다"
   let writeType = 'sentences';
 
   // per-activity state, so switching tabs does not lose your work
-  const wsSent = { items: null, idx: 0, results: [], loading: false, error: '', fb: null, checking: false, draft: '' };
+  const wsSent = { items: null, idx: 0, results: [], loading: false, error: '', fb: null, checking: false, draft: '', mastered: 0 };
   const wsConvo = { scenario: '', started: false, loading: false, error: '', role: '', setting: '', goal: '', msgs: [], userTurns: 0, summary: null, hint: null, sending: false, draft: '' };
-  const wsText = { kind: 'story', subject: '', started: false, loading: false, error: '', fb: null, draft: '' };
+  const wsStory = { kind: 'story', subject: '', started: false, loading: false, error: '', fb: null, draft: '' };
+  const wsDesc = { kind: 'description', subject: '', started: false, loading: false, error: '', fb: null, draft: '' };
+  function currentWsText() { return writeType === 'description' ? wsDesc : wsStory; }
 
   async function writeAI(system, userText, maxTokens) {
     const response = await fetch('/api/claude', {
@@ -2313,7 +2251,7 @@ const TTMIK_CURRICULUM = [["Hello, Thank you / 안녕하세요, 감사합니다"
 
     if (st.loading) { box.appendChild(el('div', 'story-status', 'Preparing your sentences…')); return; }
     if (!st.items) {
-      box.appendChild(el('p', 'story-sub', "You'll get 5 English sentences to write in Korean, each built around grammar you've learned. After each one you'll see what to fix."));
+      box.appendChild(el('p', 'story-sub', "You'll get 5 English sentences to write in Korean, each built around grammar you've learned. Get the same sentence right 3 times (across different sets) and it's mastered and never shown again \u2014 the three dots fill green as you go."));
       if (st.error) box.appendChild(el('div', 'story-status error', st.error));
       const b = el('button', 'story-btn', 'Start 5 sentences');
       b.addEventListener('click', startWriteSentences);
@@ -2323,20 +2261,28 @@ const TTMIK_CURRICULUM = [["Hello, Thank you / 안녕하세요, 감사합니다"
     if (st.idx >= st.items.length) {
       const right = st.results.filter(r => r === 'correct').length;
       box.appendChild(el('h3', 'story-title', 'All done!'));
-      box.appendChild(el('div', 'story-title-en', right + ' of ' + st.items.length + ' were spot on first try.'));
+      box.appendChild(el('div', 'story-title-en', right + ' of ' + st.items.length + ' were spot on first try.' + (st.mastered ? ' \uD83C\uDF89 ' + st.mastered + ' sentence' + (st.mastered === 1 ? '' : 's') + ' mastered!' : '')));
       const b = el('button', 'story-btn', 'New set of 5');
       b.addEventListener('click', () => { st.items = null; st.idx = 0; st.results = []; st.fb = null; st.draft = ''; renderWrite(); });
       box.appendChild(b);
       return;
     }
     const item = st.items[st.idx];
-    box.appendChild(el('div', 'write-progress', 'Sentence ' + (st.idx + 1) + ' of ' + st.items.length));
+    const prow = el('div', 'write-progress-row');
+    prow.appendChild(el('div', 'write-progress', 'Sentence ' + (st.idx + 1) + ' of ' + st.items.length));
+    const dots = el('div', 'mastery-dots');
+    const got = Math.min(SENT_MASTERY, item.correct || 0);
+    dots.title = got + ' of ' + SENT_MASTERY + ' correct answers';
+    dots.setAttribute('aria-label', dots.title);
+    for (let i = 0; i < SENT_MASTERY; i++) dots.appendChild(el('span', 'mastery-dot' + (i < got ? ' on' : '')));
+    prow.appendChild(dots);
+    box.appendChild(prow);
     const pr = el('div', 'write-prompt');
     pr.appendChild(el('div', 'wp-label', 'Write this in Korean'));
     pr.appendChild(el('div', 'wp-text', item.en));
     box.appendChild(pr);
     const meta = el('div', 'write-meta');
-    if (item.grammar) meta.appendChild(el('span', 'write-chip', 'Try using: ' + item.grammar));
+    if (item.grammar && (item.showGrammar || st.fb)) meta.appendChild(el('span', 'write-chip', 'Try using: ' + item.grammar));
     const hintWords = (item.hints || []).filter(h => h && h.ko);
     if (hintWords.length && (item.showHint || st.fb)) {
       hintWords.forEach(h => meta.appendChild(el('span', 'write-chip soft', h.ko + (h.en ? ' = ' + h.en : ''))));
@@ -2356,8 +2302,13 @@ const TTMIK_CURRICULUM = [["Hello, Thank you / 안녕하세요, 감사합니다"
       chk.disabled = st.checking;
       chk.addEventListener('click', () => checkWriteSentence(ta.value));
       actions.appendChild(chk);
+      if (item.grammar && !item.showGrammar) {
+        const gb = el('button', 'story-link-btn', '\uD83D\uDCA1 Grammar hint');
+        gb.addEventListener('click', () => { st.draft = ta.value; item.showGrammar = true; renderWrite(); });
+        actions.appendChild(gb);
+      }
       if (hintWords.length && !item.showHint) {
-        const hb = el('button', 'story-link-btn', '\uD83D\uDCA1 Hint');
+        const hb = el('button', 'story-link-btn', '\uD83D\uDCA1 Vocab hint');
         hb.addEventListener('click', () => { st.draft = ta.value; item.showHint = true; renderWrite(); });
         actions.appendChild(hb);
       }
@@ -2368,7 +2319,17 @@ const TTMIK_CURRICULUM = [["Hello, Thank you / 안녕하세요, 감사합니다"
     }
     box.appendChild(actions);
     if (st.error) box.appendChild(el('div', 'story-status error', st.error));
-    if (st.fb) box.appendChild(buildSentenceFeedback(st.fb));
+    if (st.fb) {
+      box.appendChild(buildSentenceFeedback(st.fb));
+      const left = SENT_MASTERY - Math.min(SENT_MASTERY, item.correct || 0);
+      const note = el('div', 'mastery-note' + (st.fb.mastered ? ' done' : ''));
+      note.textContent = st.fb.mastered
+        ? '\uD83C\uDF89 Mastered! You\u2019ve got this sentence right ' + SENT_MASTERY + ' times, so it won\u2019t appear again.'
+        : st.fb.gained
+          ? '\u2713 ' + (SENT_MASTERY - left) + ' of ' + SENT_MASTERY + ' \u2014 get it right ' + left + ' more time' + (left === 1 ? '' : 's') + ' in future sets to master it.'
+          : 'No point this time \u2014 this sentence will come back in a later set.';
+      box.appendChild(note);
+    }
     if (!st.fb) setTimeout(() => { try { ta.focus(); } catch (e) {} }, 0);
   }
 
@@ -2404,22 +2365,74 @@ const TTMIK_CURRICULUM = [["Hello, Thank you / 안녕하세요, 감사합니다"
     return box;
   }
 
+  // ----- sentence bank: remembers every sentence and how often you got it right -----
+  const SENT_BANK_KEY = 'write_sentences';
+  const SENT_MASTERY = 3;
+  let sentBank = null;
+  let sentBankOwner = null;
+
+  async function loadSentBank() {
+    const owner = currentUser ? currentUser.id : 'guest';
+    if (sentBank && sentBankOwner === owner) return sentBank;
+    let list = [];
+    try {
+      const res = await appStorageGet(SENT_BANK_KEY);
+      if (res && res.value) list = JSON.parse(res.value);
+    } catch (e) {}
+    sentBank = Array.isArray(list) ? list : [];
+    sentBankOwner = owner;
+    return sentBank;
+  }
+
+  async function saveSentBank() {
+    if (!sentBank) return;
+    // keep storage small: drop the oldest mastered sentences once the bank gets big
+    if (sentBank.length > 400) {
+      const mastered = sentBank.filter(x => x.correct >= SENT_MASTERY).sort((x, y) => (x.last || 0) - (y.last || 0));
+      const drop = new Set(mastered.slice(0, sentBank.length - 400).map(x => x.id));
+      sentBank = sentBank.filter(x => !drop.has(x.id));
+    }
+    const slim = sentBank.map(x => ({ id: x.id, en: x.en, grammar: x.grammar, hints: x.hints, correct: x.correct || 0, seen: x.seen || 0, lv: x.lv || 0, last: x.last || 0, rnd: x.rnd || 0 }));
+    try { await appStorageSet(SENT_BANK_KEY, JSON.stringify(slim)); } catch (e) {}
+  }
+
   async function startWriteSentences() {
+    setFlashcardsCollapsed(true);
     const st = wsSent;
     const { level, lesson } = getStoryProgress();
-    const targets = pickStoryTargets(level, lesson);
-    const chosen = pickRandom(targets, 5);
-    const words = getPriorityWords(10);
+    const lv = level * 100 + lesson;
     st.loading = true; st.error = ''; renderWrite();
-    const sys = 'You create Korean writing exercises for a learner.\n' + writeLearnerContext() + '\n' +
-      'Create exactly 5 short English sentences that the learner will translate INTO Korean. Rules:\n1. Each sentence must be fully writable using ONLY grammar from the known list and very basic vocabulary. Keep them short (4 to 10 English words), natural and sensible, and different in topic.\n2. Build each sentence around a different known grammar point' + (chosen.length ? ', preferring these: ' + chosen.map(t => t.title).join(' | ') : '') + '. Put that grammar point in "grammar" (a short name such as -고 싶어요).\n3. For each, give 1 to 3 hint words (Korean + English meaning) for the key vocabulary the learner needs.' + (words.length ? ' Where natural, base hint words on the learner\'s saved words: ' + words.join(', ') + '.' : '') + '\n\n' +
-      'Respond with ONLY a JSON object, no markdown fences, in this exact shape: {"items":[{"en":"English sentence","grammar":"short grammar point name","hints":[{"ko":"Korean word","en":"meaning"}]}]}';
-    try {
-      const data = await writeAI(sys, 'Create the 5 exercises now.', 2500);
-      if (!data.items || !data.items.length) throw new Error('Could not build the exercises. Try again.');
-      st.items = data.items.slice(0, 5); st.idx = 0; st.results = []; st.fb = null; st.draft = '';
-    } catch (e) { st.error = writeErrMsg(e); }
+    const bank = await loadSentBank();
+    // every set is a numbered round; sentences from the previous 2 rounds sit out (cooldown)
+    const round = bank.reduce((m, x) => Math.max(m, x.rnd || 0), 0) + 1;
+    const open = bank.filter(x => (x.correct || 0) < SENT_MASTERY && (x.lv || 0) <= lv && !(x.rnd && round - x.rnd <= 2));
+    // each set has at most ONE sentence you've already attempted; the other four are unused or brand new
+    const learning = pickRandom(open.filter(x => (x.seen || 0) > 0), 1);
+    const unused = pickRandom(open.filter(x => !(x.seen || 0)), 5 - learning.length);
+    let need = 5 - learning.length - unused.length;
+    let fresh = [];
+    if (need > 0) {
+      const targets = pickStoryTargets(level, lesson);
+      const chosen = pickRandom(targets, need);
+      const words = getPriorityWords(10);
+      const avoid = bank.slice(-40).map(x => x.en);
+      const sys = 'You create Korean writing exercises for a learner.\n' + writeLearnerContext() + '\n' +
+        'Create exactly ' + need + ' short English sentences that the learner will translate INTO Korean. Rules:\n1. Each sentence must be fully writable using ONLY grammar from the known list and very basic vocabulary. Keep them short (4 to 10 English words), natural and sensible, and different in topic.\n2. Build each sentence around a different known grammar point' + (chosen.length ? ', preferring these: ' + chosen.map(t => t.title).join(' | ') : '') + '. Put that grammar point in "grammar" (a short name such as -고 싶어요).\n3. For each, give 1 to 3 hint words (Korean + English meaning) for the key vocabulary the learner needs.' + (words.length ? ' Where natural, base hint words on the learner\'s saved words: ' + words.join(', ') + '.' : '') + (avoid.length ? '\n4. Do NOT repeat or closely paraphrase any of these existing sentences: ' + avoid.join(' | ') : '') + '\n\n' +
+        'Respond with ONLY a JSON object, no markdown fences, in this exact shape: {"items":[{"en":"English sentence","grammar":"short grammar point name","hints":[{"ko":"Korean word","en":"meaning"}]}]}';
+      try {
+        const data = await writeAI(sys, 'Create the ' + need + ' exercises now.', 2500);
+        fresh = (data.items || []).slice(0, need).filter(x => x && x.en).map(x => ({ id: makeId(), en: x.en, grammar: x.grammar || '', hints: x.hints || [], correct: 0, seen: 0, lv, last: 0 }));
+        fresh.forEach(x => bank.push(x));
+      } catch (e) {
+        if (!learning.length && !unused.length) { st.error = writeErrMsg(e); st.loading = false; renderWrite(); return; }
+      }
+    }
+    const all = learning.concat(unused, fresh);
+    if (!all.length) { st.error = 'Could not build the exercises. Try again.'; st.loading = false; renderWrite(); return; }
+    all.forEach((x) => { delete x.showHint; delete x.showGrammar; x.rnd = round; });
+    st.items = pickRandom(all, all.length); st.idx = 0; st.results = []; st.fb = null; st.draft = ''; st.mastered = 0;
     st.loading = false; renderWrite();
+    saveSentBank();
   }
 
   async function checkWriteSentence(answer) {
@@ -2436,6 +2449,14 @@ const TTMIK_CURRICULUM = [["Hello, Thank you / 안녕하세요, 감사합니다"
       fb.answer = text;
       st.fb = fb;
       st.results[st.idx] = fb.verdict === 'correct' ? 'correct' : 'wrong';
+      item.seen = (item.seen || 0) + 1;
+      item.last = Date.now();
+      if (fb.verdict === 'correct') {
+        item.correct = Math.min(SENT_MASTERY, (item.correct || 0) + 1);
+        fb.gained = true;
+        if (item.correct >= SENT_MASTERY) { fb.mastered = true; st.mastered = (st.mastered || 0) + 1; }
+      }
+      saveSentBank();
     } catch (e) { st.error = writeErrMsg(e); }
     st.checking = false; renderWrite();
   }
@@ -2579,6 +2600,7 @@ const TTMIK_CURRICULUM = [["Hello, Thank you / 안녕하세요, 감사합니다"
   }
 
   async function startWriteConvo() {
+    setFlashcardsCollapsed(true);
     const st = wsConvo;
     const scenario = st.scenario.trim() || pickRandom(WRITE_CONVO_SCENARIOS, 1)[0];
     st.loading = true; st.error = ''; renderWrite();
@@ -2639,21 +2661,12 @@ const TTMIK_CURRICULUM = [["Hello, Thank you / 안녕하세요, 감사합니다"
 
   // ---------- Story / description ----------
   function renderWriteText() {
-    const st = wsText;
+    const st = currentWsText();
     const box = el('div', 'write-card');
     writeBodyEl.appendChild(box);
 
     if (!st.started) {
-      const tabs = el('div', 'format-tabs');
-      [['story', 'Short story'], ['description', 'Description']].forEach(([k, label]) => {
-        const b = el('button', 'format-tab' + (st.kind === k ? ' active' : ''), label);
-        b.type = 'button';
-        b.addEventListener('click', () => { st.kind = k; st.subject = ''; renderWrite(); });
-        tabs.appendChild(b);
-      });
-      box.appendChild(tabs);
       const f = el('div', 'story-field story-field-wide');
-      f.style.marginTop = '14px';
       f.appendChild(el('label', null, st.kind === 'story' ? 'What is your story about?' : 'Describe something or someone'));
       const inp = el('input');
       inp.type = 'text'; inp.maxLength = 80; inp.value = st.subject;
@@ -2670,6 +2683,7 @@ const TTMIK_CURRICULUM = [["Hello, Thank you / 안녕하세요, 감사합니다"
       b.addEventListener('click', () => {
         st.subject = st.subject.trim() || pickRandom(ideas, 1)[0];
         st.started = true; st.fb = null; st.draft = ''; st.error = '';
+        setFlashcardsCollapsed(true);
         renderWrite();
       });
       box.appendChild(b);
@@ -2743,7 +2757,7 @@ const TTMIK_CURRICULUM = [["Hello, Thank you / 안녕하세요, 감사합니다"
   }
 
   async function checkWriteText(text) {
-    const st = wsText;
+    const st = currentWsText();
     const t = (text || '').trim();
     if (t.length < 6) { st.error = 'Write a few sentences first.'; renderWrite(); return; }
     st.loading = true; st.error = ''; st.draft = t; renderWrite();
@@ -2780,7 +2794,6 @@ const TTMIK_CURRICULUM = [["Hello, Thank you / 안녕하세요, 감사합니다"
 
   function initAuth() {
     if (!supabaseClient) {
-      loadHistory();
       loadFlashcards();
       loadStoryProgress();
       return;
@@ -2792,7 +2805,6 @@ const TTMIK_CURRICULUM = [["Hello, Thank you / 안녕하세요, 감사합니다"
       updateAuthUI();
       if (newUserId === lastUserId) return;
       lastUserId = newUserId;
-      loadHistory();
       loadFlashcards();
       loadStoryProgress();
       if (currentUser) offerLegacyImport();
@@ -3093,10 +3105,6 @@ const TTMIK_CURRICULUM = [["Hello, Thank you / 안녕하세요, 감사합니다"
       if (currentEntry !== entry) return;
       if (alt.illustrationSvg) entry.result.illustrationSvg = alt.illustrationSvg;
       showIllustration(entry.result);
-
-      if (historyItems[0] && historyItems[0].result === entry.result) {
-        persistHistory();
-      }
     } catch (err) {
       console.error('Could not regenerate illustration', err);
       if (box) box.classList.remove('regenerating');
@@ -3158,7 +3166,6 @@ const TTMIK_CURRICULUM = [["Hello, Thank you / 안녕하세요, 감사합니다"
 
       renderResult(parsed, detectedDirection);
       currentEntry = { source: text, direction: detectedDirection, result: parsed };
-      saveToHistory(text, detectedDirection, parsed);
       translateBtn.disabled = !input.value.trim();
 
       if (parsed.imageQuery) {
@@ -3166,9 +3173,6 @@ const TTMIK_CURRICULUM = [["Hello, Thank you / 안녕하세요, 감사합니다"
           if (myId !== requestId || !imageUrl) return;
           parsed.imageUrl = imageUrl;
           showIllustration(parsed);
-          if (historyItems[0] && historyItems[0].result === parsed) {
-            persistHistory();
-          }
         });
       }
     } catch (err) {
@@ -3282,114 +3286,6 @@ const TTMIK_CURRICULUM = [["Hello, Thank you / 안녕하세요, 감사합니다"
 
     requestAnimationFrame(() => resultWrap.classList.add('visible'));
   }
-
-  let historyLoadSeq = 0;
-
-  async function loadHistory() {
-    const seq = ++historyLoadSeq;
-    try {
-      const res = await appStorageGet(HISTORY_KEY);
-      if (seq !== historyLoadSeq) return;
-      historyItems = res && res.value ? JSON.parse(res.value) : [];
-    } catch (e) {
-      if (seq !== historyLoadSeq) return;
-      historyItems = [];
-    }
-    if (seq !== historyLoadSeq) return;
-    renderHistory();
-  }
-
-  async function saveToHistory(sourceText, dir, parsed) {
-    historyItems.unshift({ source: sourceText, direction: dir, result: parsed, ts: Date.now() });
-    if (historyItems.length > MAX_HISTORY) historyItems = historyItems.slice(0, MAX_HISTORY);
-    renderHistory();
-    try {
-      await appStorageSet(HISTORY_KEY, JSON.stringify(historyItems));
-    } catch (e) {
-      console.error('Could not save history', e);
-    }
-  }
-
-  async function persistHistory() {
-    try {
-      await appStorageSet(HISTORY_KEY, JSON.stringify(historyItems));
-    } catch (e) {
-      console.error('Could not save history', e);
-    }
-  }
-
-  function deleteHistoryItem(idx) {
-    historyItems.splice(idx, 1);
-    renderHistory();
-    persistHistory();
-  }
-
-  function renderHistory() {
-    if (!historyItems.length) {
-      historyListEl.innerHTML = '<div class="history-empty">Words you look up will appear here.</div>';
-      return;
-    }
-    historyListEl.innerHTML = '';
-    historyItems.forEach((item, idx) => {
-      const row = document.createElement('div');
-      row.className = 'history-item';
-
-      const main = document.createElement('div');
-      main.className = 'history-main';
-      main.addEventListener('click', () => loadHistoryItem(idx));
-
-      const source = document.createElement('span');
-      source.className = 'history-source';
-      source.textContent = item.source;
-      const translation = document.createElement('span');
-      translation.className = 'history-translation';
-      translation.textContent = item.result && item.result.translation ? item.result.translation : '';
-      main.appendChild(source);
-      main.appendChild(translation);
-
-      const remove = document.createElement('button');
-      remove.className = 'history-remove';
-      remove.setAttribute('aria-label', 'Remove from history');
-      remove.innerHTML = '<svg viewBox="0 0 24 24" fill="none"><path d="M4 7h16" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M9 7V5c0-.6.4-1 1-1h4c.6 0 1 .4 1 1v2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 7l1 13c0 .6.4 1 1 1h8c.6 0 1-.4 1-1l1-13" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M10 11v6M14 11v6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>';
-      remove.addEventListener('click', (e) => {
-        e.stopPropagation();
-        deleteHistoryItem(idx);
-      });
-
-      row.appendChild(main);
-      row.appendChild(remove);
-      historyListEl.appendChild(row);
-    });
-  }
-
-  function loadHistoryItem(idx) {
-    const item = historyItems[idx];
-    if (!item) return;
-    requestId++;
-    const itemPair = getPairFromDirection(item.direction);
-    if (itemPair && itemPair.id !== currentPairId) {
-      currentPairId = itemPair.id;
-      applyLangPair();
-    }
-    input.value = item.source;
-    autoResize();
-    translateBtn.disabled = false;
-    currentEntry = { source: item.source, direction: item.direction, result: item.result };
-    renderResult(item.result, item.direction);
-  }
-
-  clearHistoryBtn.addEventListener('click', async () => {
-    historyItems = [];
-    renderHistory();
-    try {
-      await appStorageDelete(HISTORY_KEY);
-    } catch (e) {}
-  });
-
-  historyToggleBtn.addEventListener('click', () => {
-    const collapsed = historyPanel.classList.toggle('collapsed');
-    historyToggleBtn.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
-  });
 
   copyBtn.addEventListener('click', async () => {
     try {
