@@ -2316,6 +2316,13 @@ const TTMIK_CURRICULUM = [["Hello, Thank you / 안녕하세요, 감사합니다"
       const next = el('button', 'story-btn', st.idx + 1 >= st.items.length ? 'Finish' : 'Next sentence');
       next.addEventListener('click', () => { st.idx++; st.fb = null; st.draft = ''; renderWrite(); });
       actions.appendChild(next);
+      if (item.grammar) {
+        const same = el('button', 'story-link-btn', st.moreLoading ? 'Making one\u2026' : '\u21BB Another with this grammar');
+        same.disabled = !!st.moreLoading;
+        same.title = 'Practise another sentence using: ' + item.grammar;
+        same.addEventListener('click', () => addSameGrammarSentence(item));
+        actions.appendChild(same);
+      }
     }
     box.appendChild(actions);
     if (st.error) box.appendChild(el('div', 'story-status error', st.error));
@@ -2433,6 +2440,32 @@ const TTMIK_CURRICULUM = [["Hello, Thank you / 안녕하세요, 감사합니다"
     st.items = pickRandom(all, all.length); st.idx = 0; st.results = []; st.fb = null; st.draft = ''; st.mastered = 0;
     st.loading = false; renderWrite();
     saveSentBank();
+  }
+
+  async function addSameGrammarSentence(prev) {
+    const st = wsSent;
+    if (st.moreLoading) return;
+    const { level, lesson } = getStoryProgress();
+    const lv = level * 100 + lesson;
+    st.moreLoading = true; st.error = ''; renderWrite();
+    const bank = await loadSentBank();
+    const avoid = bank.filter(x => x.grammar === prev.grammar).map(x => x.en).concat(bank.slice(-30).map(x => x.en));
+    const words = getPriorityWords(10);
+    const sys = 'You create Korean writing exercises for a learner.\n' + writeLearnerContext() + '\n' +
+      'Create exactly 1 short English sentence that the learner will translate INTO Korean. Rules:\n1. It must be fully writable using ONLY grammar from the known list and very basic vocabulary. Keep it short (4 to 10 English words), natural and sensible.\n2. It MUST practise exactly the same grammar point as the previous exercise: ' + prev.grammar + ' (previous sentence: "' + prev.en + '"). Use a different topic and different vocabulary from the previous sentence. Put the grammar point in "grammar" exactly as written here.\n3. Give 1 to 3 hint words (Korean + English meaning) for the key vocabulary the learner needs.' + (words.length ? ' Where natural, base hint words on the learner\'s saved words: ' + words.join(', ') + '.' : '') + (avoid.length ? '\n4. Do NOT repeat or closely paraphrase any of these existing sentences: ' + avoid.join(' | ') : '') + '\n\n' +
+      'Respond with ONLY a JSON object, no markdown fences, in this exact shape: {"items":[{"en":"English sentence","grammar":"short grammar point name","hints":[{"ko":"Korean word","en":"meaning"}]}]}';
+    try {
+      const data = await writeAI(sys, 'Create the exercise now.', 1000);
+      const x = (data.items || [])[0];
+      if (!x || !x.en) throw new Error('empty');
+      const round = prev.rnd || (bank.reduce((m, y) => Math.max(m, y.rnd || 0), 0) + 1);
+      const item = { id: makeId(), en: x.en, grammar: prev.grammar, hints: x.hints || [], correct: 0, seen: 0, lv, last: 0, rnd: round };
+      bank.push(item);
+      st.items.splice(st.idx + 1, 0, item);
+      st.idx++; st.fb = null; st.draft = '';
+      saveSentBank();
+    } catch (e) { st.error = writeErrMsg(e); }
+    st.moreLoading = false; renderWrite();
   }
 
   async function checkWriteSentence(answer) {
